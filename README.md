@@ -1,3 +1,3 @@
-# csst
+# CSST
 
-CSST pipeline
+CSST pipeline.
