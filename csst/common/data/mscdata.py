@@ -2,7 +2,7 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU, ImageHDU
 from astropy.io.fits.header import Header
-from ..common.data import CsstData
+from csst.common.data import CsstData
 
 
 class CsstMscData(CsstData):
@@ -13,12 +13,22 @@ class CsstMscData(CsstData):
         super(CsstData, self).__init__(primaryHDU, imgHDU, **kwargs)
         self._l1hdr_global = primaryHDU.header.copy()
         #         self._l1hdr_global['SIMPLE']  =  'T' #/ conforms to FITS standard
-        #         self._l1hdr_global['NAXIS']  =  0
+        #         self._l1hdr_global['NAXIS']  =  0kkjk
         self._l1data['sci'] = ImageHDU()
         self._l1data['weight'] = ImageHDU()
         self._l1data['flag'] = ImageHDU()
 
     def set_flat(self, flatimg):
+        """
+
+        Parameters
+        ----------
+        flatimg
+
+        Returns
+        -------
+
+        """
         self._auxdata['flat'] = flatimg
 
     def set_bias(self, biasimg):

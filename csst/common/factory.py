@@ -1,7 +1,7 @@
 from astropy.io import fits
 
-from .data import INSTRUMENT_LIST
-from ..msc.mscdata import CsstMscImgData
+from .data.data import INSTRUMENT_LIST
+from csst.common.data.mscdata import CsstMscImgData
 
 
 class CsstDataFactory:
