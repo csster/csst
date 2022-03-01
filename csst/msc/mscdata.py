@@ -2,7 +2,10 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU, ImageHDU
 from astropy.io.fits.header import Header
-from csst.common.data import CsstData
+from ..common.data import CsstData
+
+
+__all__ = ["CsstMscData", "CsstMscImgData"]
 
 
 class CsstMscData(CsstData):

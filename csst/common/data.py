@@ -3,8 +3,10 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from ..CsstException import CsstException
+from csst.common.CsstException import CsstException
 
+
+__all__ = ["CsstData", "INSTRUMENT_LIST"]
 
 INSTRUMENT_LIST = ["MSC", ]
 
@@ -46,12 +48,12 @@ class CsstData:
         """
         if ext == 'pri':
             try:
-                value = self._primary_hdu.header.get(key)
+                return self._primary_hdu.header.get(key)
             except Exception as e:
                 print(e)
         elif ext == 'img':
             try:
-                value = self._l0data.header.get(key)
+                return self._l0data.header.get(key)
             except Exception as e:
                 print(e)
         else:
