@@ -5,8 +5,8 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='csst',
-    version='0.0.1',
-    author='Chao Liu',
+    version='0.0.2',
+    author='CSST Team',
     author_email='liuchao@nao.cas.cn',
     description='The CSST pipeline',  # short description
     long_description=long_description,
