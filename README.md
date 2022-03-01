@@ -5,10 +5,10 @@ CSST pipeline.
 
 ## install
 ```
-pip install -U git+git://github.com/hypergravity/laspec
+pip install -U git+git://github.com/csster/csst
 ```
 
 
 ## doc
 
-[ https://laspec.readthedocs.io/en/latest/]( https://laspec.readthedocs.io/en/latest/)
+[ https://csst.readthedocs.io/en/latest/]( https://csst.readthedocs.io/en/latest/)
