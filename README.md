@@ -1,4 +1,6 @@
-## CSST
+## CSST 
+[![Documentation Status](https://readthedocs.org/projects/csst/badge/?version=latest)](https://csst.readthedocs.io/en/latest/?badge=latest)
+  
 
 CSST pipeline.
 
