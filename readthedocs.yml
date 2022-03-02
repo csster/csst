@@ -19,12 +19,9 @@ formats:
 python:
   version: 3.8
   install:
-    - requirements: docs/requirements.txt
+    - requirements: doc/requirements.txt
     - method: pip
       path: .
-  pip_install: true
-
-requirements_file: .readthedocs-requirements.txt
 
 submodules:
   include: []
