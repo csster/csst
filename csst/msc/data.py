@@ -2,7 +2,7 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU, ImageHDU
 from astropy.io.fits.header import Header
-from ..common.data import CsstData
+from ..common.data import CsstData, INSTRUMENT_LIST
 
 
 __all__ = ["CsstMscData", "CsstMscImgData"]
@@ -81,11 +81,38 @@ class CsstMscData(CsstData):
 
 class CsstMscImgData(CsstMscData):
     def __init__(self, primaryHDU, imgHDU, **kwargs):
-        print('create CsstMscImgData')
+        # print('create CsstMscImgData')
         super(CsstMscData, self).__init__(primaryHDU, imgHDU, **kwargs)
 
     def __repr__(self):
         return "<CsstMscImgData: {} {}>".format(self.instrument, self.detector)
+
+    @staticmethod
+    def read(fitsfilename):
+        """ create CSST Data instances
+
+        Parameters
+        ----------
+        fitsfilename:
+            the file name of fits files
+
+        Returns
+        -------
+
+        """
+
+        try:
+            hl = fits.open(fitsfilename)
+            instrument = hl[0].header.get('INSTRUME')  # strip or not?
+            detector = hl[0].header.get('DETECTOR')  # strip or not?
+            print("@CsstMscImgData: reading data {} ...".format(fitsfilename))
+            assert instrument in INSTRUMENT_LIST
+            if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
+                # multi-band imaging
+                data = CsstMscImgData(hl[0], hl[1], instrument=instrument, detector=detector)
+                return data
+        except Exception as e:
+            print(e)
 
 
 # def test():

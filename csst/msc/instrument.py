@@ -1,6 +1,5 @@
 from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
-from csst.common.data import CsstData
 from enum import Enum
 import numpy as np
 from ..common.processors import CsstProcStatus, CsstProcessor

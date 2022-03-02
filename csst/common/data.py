@@ -23,7 +23,7 @@ class CsstData:
     _auxdata = OrderedDict()
 
     def __init__(self, primaryHDU, imgHDU, instrument=None, detector=None):
-        print('create CsstData')
+        # print('create CsstData')
         self._primary_hdu = primaryHDU
         self._l0data = imgHDU
         self.instrument = instrument
@@ -60,7 +60,7 @@ class CsstData:
             raise CsstException
 
     def set_l1keyword(self, key, value):
-        print('check out whether ' + key + " is a valid key and " + value + " is valid value")
+        raise NotImplementedError('check out whether ' + key + " is a valid key and " + value + " is valid value")
 
     def set_l1data(self, img):
         print('save image data to l2data')
@@ -83,3 +83,7 @@ class CsstData:
             hdulist.writeto(filename)
         except Exception as e:
             print(e)
+
+    def read(self, **kwargs):
+        """ read data from fits file """
+        raise NotImplementedError
