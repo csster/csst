@@ -13,15 +13,22 @@ csst
 
 `csst` is the pipeline package for the **CSST** (Chinese Space Station Telescope).
 
+* github: https://github.com/csster/csst
+* PYPI: https://pypi.org/project/csst
+
+
 ************
 Installation
 ************
 
 Install using `pip <https://pypi.org/project/matplotlib>`__:
-
    .. code-block:: bash
 
        pip install -U git+git://github.com/csster/csst
+or
+   .. code-block:: bash
+
+       pip install -U csst
 
 
 .. toctree::
