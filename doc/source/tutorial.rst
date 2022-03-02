@@ -34,4 +34,8 @@ The output:
     instrument:  MSC
     object:  100000279
 
-to be updated ...
+Full code is below
+
+
+.. literalinclude:: ../../examples/example_csstmscdata.py
+

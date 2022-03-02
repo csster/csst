@@ -10,19 +10,20 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
+import os
+import sys
 # sys.path.insert(0, os.path.abspath('.'))
 
+import csst
 
 # -- Project information -----------------------------------------------------
 
 project = 'csst'
-copyright = '2022, csster'
-author = 'csster'
+copyright = '2022, CSST team'
+author = 'CSST team.'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = csst.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -31,6 +32,7 @@ release = '0.0.1'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.autodoc",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
