@@ -12,7 +12,10 @@ setuptools.setup(
     description='The CSST pipeline',  # short description
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='http://github.com/csster/csst',
+    url='https://csst.readthedocs.io',
+    project_urls={
+        'Source': 'http://github.com/csster/csst',
+    },
     packages=setuptools.find_packages(),
     license='MIT',
     classifiers=["Development Status :: 5 - Production/Stable",
