@@ -33,7 +33,14 @@ release = csst.__version__
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    'sphinx.ext.imgmath',
+    'numpydoc',
+    'sphinx.ext.autosummary',
+    'sphinx.ext.coverage',
+    'sphinx.ext.intersphinx',
+    'sphinx_gallery.gen_gallery'
 ]
+
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
