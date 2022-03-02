@@ -3,4 +3,4 @@ python:
   # conf.py)
   pip_install: true
 
-requirements_file: ..readthedocs-requirements.txt
+requirements_file: .readthedocs-requirements.txt

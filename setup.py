@@ -26,5 +26,5 @@ setuptools.setup(
     include_package_data=False,
     package_data={"": ["LICENSE", "README.md"]},
     requires=['numpy', 'scipy', 'astropy'],
-    python_requires='>=3.9.7',
+    python_requires='>=3.7',
 )
