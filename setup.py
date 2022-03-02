@@ -1,11 +1,12 @@
 import setuptools
+import csst
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
     name='csst',
-    version='0.0.3',
+    version=csst.__version__,
     author='CSST Team',
     author_email='bozhang@nao.cas.cn',
     description='The CSST pipeline',  # short description
@@ -24,5 +25,6 @@ setuptools.setup(
     package_dir={'csst': 'csst'},
     include_package_data=False,
     package_data={"": ["LICENSE", "README.md"]},
-    requires=['numpy', 'scipy', 'astropy', 'joblib']
+    requires=['numpy', 'scipy', 'astropy'],
+    python_requires='>=3.9.7',
 )
