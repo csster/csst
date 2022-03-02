@@ -38,7 +38,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.coverage',
     'sphinx.ext.intersphinx',
-    'sphinx_gallery.gen_gallery'
 ]
 
 
