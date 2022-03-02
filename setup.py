@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='csst',
-    version='0.0.2',
+    version='0.0.3',
     author='CSST Team',
-    author_email='liuchao@nao.cas.cn',
+    author_email='bozhang@nao.cas.cn',
     description='The CSST pipeline',  # short description
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url='http://github.com/hypergravity/csst',
+    url='http://github.com/csster/csst',
     packages=setuptools.find_packages(),
     license='MIT',
     classifiers=["Development Status :: 5 - Production/Stable",
