@@ -62,7 +62,7 @@ html_theme_options = {
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
     'style_external_links': False,
-    'vcs_pageview_mode': '',
+    'vcs_pageview_mode': 'blob',
     'style_nav_header_background': 'white',
     # Toc options
     'collapse_navigation': True,
@@ -70,7 +70,6 @@ html_theme_options = {
     'navigation_depth': 4,
     'includehidden': True,
     'titles_only': False,
-    'github_url': 'https://github.com/csster/csst',
 }
 # html_theme_options = {
     # 'logo': 'joblib_logo.svg',
