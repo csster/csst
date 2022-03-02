@@ -57,13 +57,13 @@ exclude_patterns = []
 html_theme = 'sphinx_rtd_theme'
 html_theme_options = {
     'analytics_id': 'G-XXXXXXXXXX',  #  Provided by Google in your dashboard
-    # 'analytics_anonymize_ip': False,
+    'analytics_anonymize_ip': True,
     'logo_only': False,
     'display_version': True,
     'prev_next_buttons_location': 'bottom',
     'style_external_links': False,
     'vcs_pageview_mode': 'blob',
-    'style_nav_header_background': 'white',
+    'style_nav_header_background': '#955DE3', #'#67CEDE',
     # Toc options
     'collapse_navigation': True,
     'sticky_navigation': True,
@@ -86,6 +86,9 @@ html_theme_options = {
     # "headtextcolor": "#643200",
     # "codebgcolor": "#f5efe7",
 # }
+
+# html_logo = "/static/logo-wordmark-light.svg"
+# html_show_sourcelink = True
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
