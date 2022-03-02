@@ -11,28 +11,28 @@ __all__ = ["CsstMscData", "CsstMscImgData"]
 class CsstMscData(CsstData):
     _l1img_types = {'sci': True, 'weight': True, 'flag': True}
 
-    def __init__(self, primaryHDU, imgHDU, **kwargs):
-        print('create CsstMscData')
-        super(CsstData, self).__init__(primaryHDU, imgHDU, **kwargs)
-        self._l1hdr_global = primaryHDU.header.copy()
+    def __init__(self, priHDU, imgHDU, **kwargs):
+        super(CsstData, self).__init__(priHDU, imgHDU, **kwargs)
+        self._l1hdr_global = priHDU.header.copy()
         #         self._l1hdr_global['SIMPLE']  =  'T' #/ conforms to FITS standard
         #         self._l1hdr_global['NAXIS']  =  0kkjk
         self._l1data['sci'] = ImageHDU()
         self._l1data['weight'] = ImageHDU()
         self._l1data['flag'] = ImageHDU()
 
-    def set_flat(self, flatimg):
-        """
+    def set_flat(self, flat):
+        """ set flat
 
         Parameters
         ----------
-        flatimg
+        flat:
+            flat image
 
         Returns
         -------
 
         """
-        self._auxdata['flat'] = flatimg
+        self._auxdata['flat'] = flat
 
     def set_bias(self, biasimg):
         self._auxdata['bias'] = biasimg
@@ -80,32 +80,33 @@ class CsstMscData(CsstData):
 
 
 class CsstMscImgData(CsstMscData):
-    def __init__(self, primaryHDU, imgHDU, **kwargs):
+    def __init__(self, priHDU, imgHDU, **kwargs):
         # print('create CsstMscImgData')
-        super(CsstMscData, self).__init__(primaryHDU, imgHDU, **kwargs)
+        super(CsstMscData, self).__init__(priHDU, imgHDU, **kwargs)
 
     def __repr__(self):
         return "<CsstMscImgData: {} {}>".format(self.instrument, self.detector)
 
     @staticmethod
-    def read(fitsfilename):
-        """ create CSST Data instances
+    def read(fp):
+        """ read from fits file
 
         Parameters
         ----------
-        fitsfilename:
-            the file name of fits files
+        fp:
+            the file path of fits file
 
         Returns
         -------
+        CsstMscImgData
 
         """
 
         try:
-            hl = fits.open(fitsfilename)
+            hl = fits.open(fp)
             instrument = hl[0].header.get('INSTRUME')  # strip or not?
             detector = hl[0].header.get('DETECTOR')  # strip or not?
-            print("@CsstMscImgData: reading data {} ...".format(fitsfilename))
+            print("@CsstMscImgData: reading data {} ...".format(fp))
             assert instrument in INSTRUMENT_LIST
             if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
                 # multi-band imaging
@@ -113,10 +114,3 @@ class CsstMscImgData(CsstMscData):
                 return data
         except Exception as e:
             print(e)
-
-
-# def test():
-#     fp = MSC_MS_210527171000_100000279_16_raw.fits
-#
-#
-# if __name__=="__main__":

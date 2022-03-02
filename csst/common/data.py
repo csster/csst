@@ -3,7 +3,7 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from csst.common.CsstException import CsstException
+from csst.common.exception import CsstException
 
 
 __all__ = ["CsstData", "INSTRUMENT_LIST"]
@@ -12,9 +12,7 @@ INSTRUMENT_LIST = ["MSC", ]
 
 
 class CsstData:
-    """
-    general CSST data class
-    """
+    """ General CSST data class """
     _primary_hdu = []
     _l0data = []  # HDUList
     _l1hdr_global = []
@@ -30,10 +28,12 @@ class CsstData:
         self.detector = detector
 
     def get_l0data(self, copy=True):
-        """
-        obtain level 0 data from CsstData class
-        copy: True: if the user want to copy the memory of the data to the new class;
-              False: only reference of the data memory is written to the new class
+        """ get level 0 data from CsstData class
+
+        Parameters
+        ----------
+        copy : bool
+            if True, return a copy.
         """
         if copy:
             return self._l0data.data.copy()
@@ -41,10 +41,14 @@ class CsstData:
             return self._l0data.data
 
     def get_l0keyword(self, ext="pri", key="INSTRUME"):
-        """
-        obtain keywords of the fits header of level 0 image data from the CsstData class
-        ext: the index of extension. if it equals to 'pri', looking up keywords from primary session, otherwise from extension sessions
-        key: the name of the key
+        """ get a specific keyword from fits header of level 0 image data
+
+        Parameters
+        ----------
+        ext: {"pri"| "img"}
+            the HDU extension
+        key:
+            the key
         """
         if ext == 'pri':
             try:
@@ -60,20 +64,30 @@ class CsstData:
             raise CsstException
 
     def set_l1keyword(self, key, value):
-        raise NotImplementedError('check out whether ' + key + " is a valid key and " + value + " is valid value")
+        """ set  L1 keyword """
+        raise NotImplementedError("Well, not implemented...")
 
-    def set_l1data(self, img):
+    def set_l1data(self, *args, **kwargs):
         print('save image data to l2data')
+        raise NotImplementedError
 
     def get_auxdata(self, name):
+        """ get aux data
+
+        Parameters
+        ----------
+        """
         print('Parent class returns zero image.')
         # return np.zeros_like(self.get_l0data())
-        return
+        raise NotImplementedError
 
     def save_l1data(self, imgtype, filename):
-        """
-        asve level 1 image and auxilary data to data file
-        imgtype
+        """ save L1 image and auxilary data to file
+
+        Parameters
+        ----------
+        imgtype: {}
+            image type
         """
         print("save L1 image to a fits file with name " + filename)
         try:
