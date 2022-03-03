@@ -1,1 +1,2 @@
-pyreverse -ASmy -o png csst/common
+pyreverse -ASmy -o png csst/*
+
