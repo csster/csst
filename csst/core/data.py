@@ -3,7 +3,7 @@ from collections import OrderedDict
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU
 
-from csst.common.exception import CsstException
+from csst.core.exception import CsstException
 
 
 __all__ = ["CsstData", "INSTRUMENT_LIST"]

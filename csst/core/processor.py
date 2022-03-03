@@ -15,12 +15,17 @@ class CsstProcStatus(Enum):
 #     self['runtimeerror'].info = 'This run is exceptionally stopped due to runtime error.'
 
 class CsstProcessor(metaclass=ABCMeta):
+
+    def __init__(self, **kwargs):
+        pass
+
     @abstractmethod
     def prepare(self, **kwargs):
         pass
 
     @abstractmethod
-    def run(self, data):
+    def run(self, kwargs):
+        """ """
         return self._status
 
     @abstractmethod

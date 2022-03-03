@@ -2,7 +2,7 @@ from collections import OrderedDict
 from abc import ABCMeta, abstractmethod
 from enum import Enum
 import numpy as np
-from ..common.processors import CsstProcStatus, CsstProcessor
+from ..core.processor import CsstProcStatus, CsstProcessor
 
 
 class CsstMscInstrumentProc(CsstProcessor):
