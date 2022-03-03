@@ -17,7 +17,7 @@ class CsstProcStatus(Enum):
 class CsstProcessor(metaclass=ABCMeta):
 
     def __init__(self, **kwargs):
-        pass
+        self._status = CsstProcStatus()
 
     @abstractmethod
     def prepare(self, **kwargs):

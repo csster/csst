@@ -35,34 +35,44 @@ class CsstMscData(CsstData):
         self._auxdata['flat'] = flat
 
     def set_bias(self, biasimg):
+        """ set bias """
         self._auxdata['bias'] = biasimg
 
     def set_dark(self, darkimg):
+        """ set dark """
         self._auxdata['dark'] = darkimg
 
     def set_badpixel(self, badpixelimg):
+        """ set badpixel """
         self._auxdata['badpixel'] = badpixelimg
 
     def get_flat(self):
+        """ get flat """
         return self._auxdata['flat']
 
     def get_bias(self):
+        """ get bias """
         return self._auxdata['bias']
 
     def get_dark(self):
+        """ get dark """
         return self._auxdata['dark']
 
     def get_badpixel(self):
+        """ get badpixel """
         return self._auxdata['badpixel']
 
     def init_l0data(self):
+        """ initialize L0 data """
         pass
 
     def set_l1keyword(self, key, value, comment=''):
+        """ set L1 keyword """
         print('check out whether ' + key + " is a valid key and " + value + " is valid value")
         self._l1hdr_global.set(key, value, comment)
 
     def set_l1data(self, imgtype, img):
+        """ set L1 data """
         try:
             if self._l1img_types[imgtype]:
                 self._l1data[imgtype].data = img.copy()
@@ -71,6 +81,7 @@ class CsstMscData(CsstData):
         print('save image data to l1data')
 
     def save_l1data(self, imgtype, filename):
+        """ save L1 data """
         print('check ' + imgtype + ' is validate')
         try:
             if self._l1img_types[imgtype]:
@@ -89,7 +100,7 @@ class CsstMscImgData(CsstMscData):
 
     @staticmethod
     def read(fp):
-        """ read from fits file
+        """ read data from fits file
 
         Parameters
         ----------
@@ -100,6 +111,16 @@ class CsstMscImgData(CsstMscData):
         -------
         CsstMscImgData
 
+        Example
+        -------
+
+        >>> fp = "MSC_MS_210527171000_100000279_16_raw.fits"
+        >>> from csst.msc import CsstMscImgData
+        >>> data = CsstMscImgData.read(fp)
+        >>> # print some info
+        >>> print("data: ", data)
+        >>> print("instrument: ", data.get_l0keyword("pri", "INSTRUME"))
+        >>> print("object: ", data.get_l0keyword("pri", "OBJECT"))
         """
 
         try:

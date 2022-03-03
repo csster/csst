@@ -20,9 +20,21 @@ class CsstData:
     _l2data = OrderedDict()  #
     _auxdata = OrderedDict()
 
-    def __init__(self, primaryHDU, imgHDU, instrument=None, detector=None):
-        # print('create CsstData')
-        self._primary_hdu = primaryHDU
+    def __init__(self, priHDU, imgHDU, instrument=None, detector=None):
+        """
+
+        Parameters
+        ----------
+        priHDU:
+            primary HDU
+        imgHDU:
+            image HDU
+        instrument:
+            instrument
+        detector:
+            detector
+        """
+        self._primary_hdu = priHDU
         self._l0data = imgHDU
         self.instrument = instrument
         self.detector = detector
