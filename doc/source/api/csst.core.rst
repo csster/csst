@@ -1,26 +1,26 @@
-csst.common
-===========
+csst.core
+=========
 
-csst.common.data
-----------------
+csst.core.data
+--------------
 
-.. automodule:: csst.common.data
+.. automodule:: csst.core.data
    :members:
    :undoc-members:
    :show-inheritance:
 
-csst.common.exception
+csst.core.exception
 ---------------------
 
-.. automodule:: csst.common.exception
+.. automodule:: csst.core.exception
    :members:
    :undoc-members:
    :show-inheritance:
 
-csst.common.processors
+csst.core.processors
 ----------------------
 
-.. automodule:: csst.common.processors
+.. automodule:: csst.core.processor
    :members:
    :undoc-members:
    :show-inheritance:
