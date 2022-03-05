@@ -3,6 +3,7 @@ import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU, ImageHDU
 from astropy.io.fits.header import Header
 from ..core.data import CsstData, INSTRUMENT_LIST
+import numpy as np
 
 
 __all__ = ["CsstMscData", "CsstMscImgData"]
@@ -12,10 +13,8 @@ class CsstMscData(CsstData):
     _l1img_types = {'sci': True, 'weight': True, 'flag': True}
 
     def __init__(self, priHDU, imgHDU, **kwargs):
-        super(CsstData, self).__init__(priHDU, imgHDU, **kwargs)
+        super(CsstMscData, self).__init__(priHDU, imgHDU, **kwargs)
         self._l1hdr_global = priHDU.header.copy()
-        #         self._l1hdr_global['SIMPLE']  =  'T' #/ conforms to FITS standard
-        #         self._l1hdr_global['NAXIS']  =  0kkjk
         self._l1data['sci'] = ImageHDU()
         self._l1data['weight'] = ImageHDU()
         self._l1data['flag'] = ImageHDU()
@@ -74,8 +73,18 @@ class CsstMscData(CsstData):
     def set_l1data(self, imgtype, img):
         """ set L1 data """
         try:
-            if self._l1img_types[imgtype]:
-                self._l1data[imgtype].data = img.copy()
+            if imgtype == 'sci':
+                self._l1data[imgtype].header['EXTNAME'] = 'img'
+                self._l1data[imgtype].header['BUNIT'] = 'e/s'
+                self._l1data[imgtype].data = img.astype(np.float32) / self._l1hdr_global['exptime']
+            elif imgtype == 'weight':
+                self._l1data[imgtype].header['EXTNAME'] = 'wht'
+                self._l1data[imgtype].data = img.astype(np.float32)
+            elif imgtype == 'flag':
+                self._l1data[imgtype].header['EXTNAME'] = 'flg'
+                self._l1data[imgtype].data = img.astype(np.uint16)
+            else:
+                raise TypeError('unknow type image')
         except Exception as e:
             print(e)
         print('save image data to l1data')
@@ -93,7 +102,7 @@ class CsstMscData(CsstData):
 class CsstMscImgData(CsstMscData):
     def __init__(self, priHDU, imgHDU, **kwargs):
         # print('create CsstMscImgData')
-        super(CsstMscData, self).__init__(priHDU, imgHDU, **kwargs)
+        super(CsstMscImgData, self).__init__(priHDU, imgHDU, **kwargs)
 
     def __repr__(self):
         return "<CsstMscImgData: {} {}>".format(self.instrument, self.detector)
@@ -124,14 +133,16 @@ class CsstMscImgData(CsstMscData):
         """
 
         try:
-            hl = fits.open(fp)
-            instrument = hl[0].header.get('INSTRUME')  # strip or not?
-            detector = hl[0].header.get('DETECTOR')  # strip or not?
-            print("@CsstMscImgData: reading data {} ...".format(fp))
-            assert instrument in INSTRUMENT_LIST
-            if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
-                # multi-band imaging
-                data = CsstMscImgData(hl[0], hl[1], instrument=instrument, detector=detector)
-                return data
+            with fits.open(fp) as hdulist:
+                instrument = hdulist[0].header.get('INSTRUME')  # strip or not?
+                detector = hdulist[0].header.get('DETECTOR')  # strip or not?
+                print("@CsstMscImgData: reading data {} ...".format(fp))
+                assert instrument in INSTRUMENT_LIST
+                if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
+                    # multi-band imaging
+                    hdu0 = hdulist[0].copy()
+                    hdu1 = hdulist[1].copy()
+                    data = CsstMscImgData(hdu0, hdu1, instrument=instrument, detector=detector)
+                    return data
         except Exception as e:
             print(e)

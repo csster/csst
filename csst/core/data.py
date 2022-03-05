@@ -2,6 +2,7 @@ from collections import OrderedDict
 
 import astropy.io.fits as fits
 from astropy.io.fits import HDUList, PrimaryHDU
+import numpy as np
 
 from csst.core.exception import CsstException
 
@@ -104,9 +105,13 @@ class CsstData:
         print("save L1 image to a fits file with name " + filename)
         try:
             self._l1hdr_global.set('TYPE', imgtype, 'Type of Level 1 data')
-            pri_hdu = PrimaryHDU(header=self._l1hdr_global)
-            hdulist = HDUList([pri_hdu, self._l1data[imgtype]])
-            hdulist.writeto(filename)
+            hdulist = fits.HDUList(
+                [
+                    fits.PrimaryHDU(header=self._l1hdr_global),
+                    fits.ImageHDU(header=self._l1data[imgtype].header, data=self._l1data[imgtype].data),
+                ]
+            )
+            hdulist.writeto(filename, overwrite=True)
         except Exception as e:
             print(e)
 
