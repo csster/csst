@@ -1,15 +1,15 @@
-from collections import OrderedDict
-from abc import ABCMeta, abstractmethod
-from enum import Enum
+from pathlib import Path
+
+from ccdproc import cosmicray_lacosmic
 import numpy as np
 from deepCR import deepCR
-from ..core.processor import CsstProcStatus, CsstProcessor
+
+from ..core.processor import CsstProcessor, CsstProcStatus
 
 
 class CsstMscInstrumentProc(CsstProcessor):
     _status = CsstProcStatus.empty
-    _switches = {'crosstalk': False, 'nonlinear': False,
-                 'deepcr': False, 'cti': False, 'brighterfatter': False}
+    _switches = {'deepcr': True, 'clean': False}
 
     def __init__(self):
         pass
@@ -73,19 +73,51 @@ class CsstMscInstrumentProc(CsstProcessor):
         flg = raw == 65535
         self.__flagimg = self.__flagimg | (flg * 8)
 
-    def _do_cray(self):
+    def _do_cray(self, gain, rdnoise):
         '''宇宙线像元标记
 
-        宇宙线污染的像元, 用deepCR进行标记
+        宇宙线污染的像元, 用deepCR或lacosmic进行标记
         '''
 
+        if self._switches['deepcr']:
+            clean_model = str(Path(__file__).parent /
+                              'CSST_2021-12-30_CCD23_epoch20.pth')
+            inpaint_model = 'ACS-WFC-F606W-2-32'
+            model = deepCR(clean_model,
+                           inpaint_model,
+                           device='CPU',
+                           hidden=50)
+            masked, cleaned = model.clean(self.__l1img,
+                                          threshold=0.5,
+                                          inpaint=True,
+                                          segment=True,
+                                          patch=256,
+                                          parallel=True,
+                                          n_jobs=2)
+        else:
+            cleaned, masked = cosmicray_lacosmic(ccd=self.__l1img,
+                                                 sigclip=3.,    # cr_threshold
+                                                 sigfrac=0.5,   # neighbor_threshold
+                                                 objlim=5.,     # constrast
+                                                 gain=gain,
+                                                 readnoise=rdnoise,
+                                                 satlevel=65535.0,
+                                                 pssl=0.0,
+                                                 niter=4,
+                                                 sepmed=True,
+                                                 cleantype='meanmask',
+                                                 fsmode='median',
+                                                 psfmodel='gauss',
+                                                 psffwhm=2.5,
+                                                 psfsize=7,
+                                                 psfk=None,
+                                                 psfbeta=4.765,
+                                                 verbose=False,
+                                                 gain_apply=True)
 
-        
-        flg, _ = deepCR(self.__l1img)
-
-
-
-        self.__flagimg = self.__flagimg | (flg * 16)
+        self.__flagimg = self.__flagimg | (masked * 16)
+        if self._switches['clean']:
+            self.__l1img = cleaned
 
     def _do_weight(self, bias, gain, rdnoise, exptime):
         '''权重图
@@ -117,19 +149,21 @@ class CsstMscInstrumentProc(CsstProcessor):
 
             exptime = data.get_l0keyword('pri', 'EXPTIME')
             gain = data.get_l0keyword('img', 'GAIN1')
-            rdnoise = data.get_l0keyword('img' ,'RDNOISE1')
+            rdnoise = data.get_l0keyword('img', 'RDNOISE1')
             flat = data.get_flat()
             bias = data.get_bias()
             dark = data.get_dark()
+
             print('Flat and bias correction')
+
             self._do_fix(raw, bias, dark, flat, exptime)
             self._do_badpix(flat)
             self._do_hot_and_warm_pix(dark, exptime, rdnoise)
             self._do_over_saturation(raw)
-            # self._do_cray()
+            self._do_cray(gain, rdnoise)
             self._do_weight(bias, gain, rdnoise, exptime)
 
-            print('fake to finish the run and save the results back to CsstData')
+            print('finish the run and save the results back to CsstData')
 
             data.set_l1data('sci', self.__l1img)
             data.set_l1data('weight', self.__weightimg)
