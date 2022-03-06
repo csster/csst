@@ -1,12 +1,9 @@
-csst.msc
-========
-
 csst.msc.data
 -------------
 
 .. automodule:: csst.msc.data
    :members:
-   :private-members:
+   :undoc-members:
    :show-inheritance:
 
 csst.msc.instrument
@@ -14,5 +11,21 @@ csst.msc.instrument
 
 .. automodule:: csst.msc.instrument
    :members:
-   :private-members:
+   :undoc-members:
+   :show-inheritance:
+
+csst.msc.processor
+------------------
+
+.. automodule:: csst.msc.processor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: csst.msc
+   :members:
+   :undoc-members:
    :show-inheritance:

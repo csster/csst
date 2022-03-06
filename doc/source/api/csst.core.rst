@@ -1,6 +1,3 @@
-csst.core
-=========
-
 csst.core.data
 --------------
 
@@ -10,17 +7,25 @@ csst.core.data
    :show-inheritance:
 
 csst.core.exception
----------------------
+-------------------
 
 .. automodule:: csst.core.exception
    :members:
    :undoc-members:
    :show-inheritance:
 
-csst.core.processors
-----------------------
+csst.core.processor
+-------------------
 
 .. automodule:: csst.core.processor
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: csst.core
    :members:
    :undoc-members:
    :show-inheritance:
