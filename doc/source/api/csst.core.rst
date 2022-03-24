@@ -21,11 +21,3 @@ csst.core.processor
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: csst.core
-   :members:
-   :undoc-members:
-   :show-inheritance:
