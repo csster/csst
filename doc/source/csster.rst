@@ -108,6 +108,10 @@ An example: the docstring of numpy.cos()
         """
 
 
+TODOs
+-----
+
+Revise your code/docstring if you get a "TODO" mark in your code, plz.
 
 `logging`
 ---------
