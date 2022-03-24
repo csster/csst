@@ -1,12 +1,12 @@
-csster的自我修养
-==============
+Guidelines to developers
+========================
 
 docstring
 ---------
 
-`csst`将使用numpy风格的docstring，参考链接： https://numpydoc.readthedocs.io/en/latest/format.html
+We adopt the *numpy* style docstring (see: https://numpydoc.readthedocs.io/en/latest/format.html)
 
-例如numpy.cos()函数的文档
+An example: the docstring of numpy.cos()
 
 .. code-block:: python
 
@@ -33,11 +33,13 @@ docstring
         **kwargs
             For other keyword-only arguments, see the
             :ref:`ufunc docs <ufuncs.kwargs>`.
+
         Returns
         -------
         y : ndarray
             The corresponding cosine values.
             This is a scalar if `x` is a scalar.
+
         Notes
         -----
         If `out` is provided, the function writes the result into it,
@@ -46,6 +48,7 @@ docstring
         ----------
         M. Abramowitz and I. A. Stegun, Handbook of Mathematical Functions.
         New York, NY: Dover, 1972.
+
         Examples
         --------
          np.cos(np.array([0, np.pi/2, np.pi]))
@@ -73,6 +76,7 @@ docstring
         The broadcasting rules are:
         * Dimensions of length 1 may be prepended to either array.
         * Arrays may be repeated along dimensions of length 1.
+
         Parameters
         ----------
         *x : array_like
@@ -92,6 +96,7 @@ docstring
             remain uninitialized.
         **kwargs
             For other keyword-only arguments, see the :ref:`ufunc docs <ufuncs.kwargs>`.
+
         Returns
         -------
         r : ndarray or tuple of ndarray
@@ -107,14 +112,9 @@ docstring
 `logging`
 ---------
 
-利用 `logging` 模块代替print进行输出提示
+Use `logging` module to print verbose info.
 
+Environment variables
+---------------------
 
-
-环境变量
--------
-
-规定程序运行的环境变量
-
-
-
+Define some environment variables for testing.
