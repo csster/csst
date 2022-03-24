@@ -25,30 +25,33 @@ or
 
        pip install -U csst
 
+
 .. toctree::
+   :hidden:
+   :caption: DEVELOPMENT
+   :maxdepth: 2
+
+   csster
+   fit_code
+   contributors
+
+
+.. toctree::
+   :hidden:
    :caption: Examples
-   :maxdepth: 1
+   :maxdepth: 2
 
    tutorial
-   fit_code
 
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
    :caption: API
 
    api/csst.core.rst
    api/csst.msc.rst
 
-
-The CSST team
--------------
-
-Contributors to `csst` packages
-
-* A
-* B
-* C
 
 .. sectionauthor:: Bo Zhang <bozhang@nao.cas.cn>
 

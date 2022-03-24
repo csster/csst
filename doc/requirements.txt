@@ -6,3 +6,4 @@ matplotlib
 healpy
 #numpydoc
 deepCR
+ccdproc
