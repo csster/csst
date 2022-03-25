@@ -1,6 +1,10 @@
 csst
 ====
 
+.. meta::
+   :description lang=cn: Automate building, versioning, and hosting of your technical documentation continuously on Read the Docs.
+
+
 .. image:: https://readthedocs.org/projects/csst/badge/?version=latest
     :target: https://csst.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
@@ -10,10 +14,8 @@ csst
 * Github: https://github.com/csster/csst
 * PYPI: https://pypi.org/project/csst
 
-Installation
-------------
 
-Install using `pip <https://pypi.org/project/matplotlib>`__:
+Install using `pip <https://pypi.org/project/pip>`__:
 
    .. code-block:: bash
 
@@ -26,15 +28,21 @@ or
        pip install -U csst
 
 
+How to contribute
+-----------------
+
 .. toctree::
    :hidden:
-   :caption: DEVELOPMENT
+   :caption: How-to guides
    :maxdepth: 2
 
    csster
    fit_code
    contributors
 
+
+Examples
+--------
 
 .. toctree::
    :hidden:
@@ -43,6 +51,9 @@ or
 
    tutorial
 
+
+API
+---
 
 .. toctree::
    :hidden:
