@@ -33,7 +33,7 @@ How to contribute
 
 .. toctree::
    :hidden:
-   :caption: How-to guides
+   :caption: How-to contribute
    :maxdepth: 2
 
    csster

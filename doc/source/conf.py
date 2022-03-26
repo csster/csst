@@ -20,7 +20,7 @@ import csst
 
 project = 'csst'
 copyright = '2022, CSST team'
-author = 'CSST team.'
+author = 'CSST Team'
 
 # The full version, including alpha/beta/rc tags
 release = csst.__version__
