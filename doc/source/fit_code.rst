@@ -28,11 +28,24 @@ For each instrument, a specific data class should be constructed.
 The pipeline
 ------------
 
-A pipeline should have the structure like below.
+A pipeline should have the structure like below. (see csst/)
 
-.. code-block:: shell
+.. code-block:: python
 
-    CsstMscImgL0Proc
-    ├── prepare()
-    ├── run()
-    └── cleanup()
+    from csst.core.processor import CsstProcessor
+
+    class CsstProcDemo(CsstProcessor):
+        def prepare(self, **args):
+            # prepare the environment
+            # for example, if you make use of some third-party software like SEXTRACTOR,
+            # do your preparation here.
+            pass
+
+        def run(self, CsstData, *args, **kwargs):
+            # run your pipeline here
+            # make sure that your input data should be a child class instance of CsstData.
+            pass
+
+        def cleanup(self, **kwargs):
+            # clean up environment
+            pass
