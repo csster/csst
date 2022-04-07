@@ -27,7 +27,10 @@ setuptools.setup(
                  "Topic :: Scientific/Engineering :: Astronomy"],
     package_dir={'csst': 'csst'},
     include_package_data=False,
-    package_data={"": ["LICENSE", "README.md"]},
+    package_data={"": ["LICENSE", "README.md"],
+                  "csst": ["msc/config/*",
+                           "msc/deepcr_model/*"
+                           ]},
     requires=['numpy', 'scipy', 'astropy'],
     python_requires='>=3.7',
 )
