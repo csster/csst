@@ -98,6 +98,10 @@ class CsstMscData(CsstData):
         except Exception as e:
             print(e)
 
+    def get_l1data(self, imgtype):
+        assert imgtype in ["sci", "flag", "weight"]
+        return self._l1img_types[imgtype]
+
 
 class CsstMscImgData(CsstMscData):
     def __init__(self, priHDU, imgHDU, **kwargs):
