@@ -135,18 +135,14 @@ class CsstMscImgData(CsstMscData):
         >>> print("instrument: ", data.get_l0keyword("pri", "INSTRUME"))
         >>> print("object: ", data.get_l0keyword("pri", "OBJECT"))
         """
-
-        try:
-            with fits.open(fp) as hdulist:
-                instrument = hdulist[0].header.get('INSTRUME')  # strip or not?
-                detector = hdulist[0].header.get('DETECTOR')  # strip or not?
-                print("@CsstMscImgData: reading data {} ...".format(fp))
-                assert instrument in INSTRUMENT_LIST
-                if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
-                    # multi-band imaging
-                    hdu0 = hdulist[0].copy()
-                    hdu1 = hdulist[1].copy()
-                    data = CsstMscImgData(hdu0, hdu1, instrument=instrument, detector=detector)
-                    return data
-        except Exception as e:
-            print(e)
+        with fits.open(fp) as hdulist:
+            instrument = hdulist[0].header.get('INSTRUME')  # strip or not?
+            detector = hdulist[0].header.get('DETECTOR')  # strip or not?
+            print("@CsstMscImgData: reading data {} ...".format(fp))
+            assert instrument in INSTRUMENT_LIST
+            if instrument == 'MSC' and 6 <= int(detector[3:5]) <= 25:
+                # multi-band imaging
+                hdu0 = hdulist[0].copy()
+                hdu1 = hdulist[1].copy()
+                data = CsstMscImgData(hdu0, hdu1, instrument=instrument, detector=detector)
+                return data
