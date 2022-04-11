@@ -49,3 +49,34 @@ A pipeline should have the structure like below. (see csst/)
         def cleanup(self, **kwargs):
             # clean up environment
             pass
+
+
+Include your data/config files
+------------------------------
+
+added on 2022-04-07
+
+Example: the current astrometry module uses `scamp` to calibrate position.
+In your module, use :
+
+.. code-block:: python
+
+    from .. import PACKAGE_PATH
+    CONFIG_SCAMP = PACKAGE_PATH + "/msc/config/scamp.default"
+
+In `setup.py`:
+
+.. code-block:: python
+
+    package_data={"": ["LICENSE", "README.md"],
+                  "csst": ["msc/config/*",
+                           "msc/deepcr_model/*"
+                           ]},
+
+
+
+Notes
+-----
+
+* DO NOT use `try-except` excessively, particularly in low level code.
+
