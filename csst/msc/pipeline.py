@@ -30,8 +30,8 @@ for i_ccd in range(6, 26):
 
     raw = CsstMscImgData.read(fp_raw)
     bias = raw.get_bias(PATH_BIAS.format(i_ccd))
-    dark = raw.get_bias(PATH_DARK.format(i_ccd))
-    flat = raw.get_bias(PATH_FLAT.format(i_ccd))
+    dark = raw.get_dark(PATH_DARK.format(i_ccd))
+    flat = raw.get_flat(PATH_FLAT.format(i_ccd))
 
     # initialize Instrument Processor
     instProc = CsstMscInstrumentProc()
@@ -44,6 +44,12 @@ for i_ccd in range(6, 26):
     wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")))
     flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")))
 
+"""
+how to use CssMscImgData:
+ 
+ img = CsstMscImgData.read(filename)
+
+"""
 
 # TODO:  position calibration
 from csst.msc.astrometry import CsstProcMscPositionCalibration
