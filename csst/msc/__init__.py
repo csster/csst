@@ -1,1 +1,1 @@
-from .data import CsstMscData, CsstMscImgData
+from .data import CsstMscImgData

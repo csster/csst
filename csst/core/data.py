@@ -5,43 +5,43 @@ from astropy.io.fits import HDUList, PrimaryHDU
 import numpy as np
 
 from csst.core.exception import CsstException
-
+from astropy.io import fits
+from copy import deepcopy
 
 __all__ = ["CsstData", "INSTRUMENT_LIST"]
 
 INSTRUMENT_LIST = ["MSC", ]
 
 
-class CsstData:
-    """ General CSST data class """
-    _primary_hdu = []
-    _l0data = []  # HDUList
-    _l1hdr_global = []
-    _l1data = OrderedDict()  # dict object
-    _l2data = OrderedDict()  #
-    _auxdata = OrderedDict()
+class CsstData(fits.HDUList):
+    """ General CSST raw class """
+    # hdu_pri = fits.PrimaryHDU()
+    # hdu_l0 = fits.ImageHDU(raw=None, name="raw")
+    # hdu_l1 = fits.ImageHDU(raw=None, name="l1")
 
-    def __init__(self, priHDU, imgHDU, instrument=None, detector=None):
+    """
+    header methods:
+    'add_blank', 'add_comment', 'add_history', 'append', 'cards', 'clear', 'comments', 'copy', 'count', 'extend', 
+    'fromfile', 'fromkeys', 'fromstring', 'fromtextfile', 'get', 'index', 'insert', 'items', 'keys', 'pop', 'popitem', 
+    'remove', 'rename_keyword', 'set', 'setdefault', 'strip', 'tofile', 'tostring', 'totextfile', 'update', 'values'
+    """
+
+    def __init__(self, hdus=None, file=None):
         """
 
         Parameters
         ----------
-        priHDU:
-            primary HDU
-        imgHDU:
-            image HDU
-        instrument:
-            instrument
-        detector:
-            detector
+        hdus:
+            a alist of HDUs
+        file:
+            open file object
         """
-        self._primary_hdu = priHDU
-        self._l0data = imgHDU
-        self.instrument = instrument
-        self.detector = detector
+        if hdus is None:
+            hdus = []
+        super(CsstData, self).__init__(hdus=hdus, file=file)
 
-    def get_l0data(self, copy=True):
-        """ get level 0 data from CsstData class
+    def get_data(self, copy=True, hdu=1):
+        """ get level 0 raw from CsstData class
 
         Parameters
         ----------
@@ -49,72 +49,79 @@ class CsstData:
             if True, return a copy.
         """
         if copy:
-            return self._l0data.data.copy()
+            return self[hdu].data.copy()
         else:
-            return self._l0data.data
+            return self[hdu].data
 
-    def get_l0keyword(self, ext="pri", key="INSTRUME"):
-        """ get a specific keyword from fits header of level 0 image data
+    def get_keyword(self, key="INSTRUME", hdu=0):
+        """ get keyword from fits header
 
         Parameters
         ----------
-        ext: {"pri"| "img"}
-            the HDU extension
         key:
             the key
         """
-        if ext == 'pri':
-            try:
-                return self._primary_hdu.header.get(key)
-            except Exception as e:
-                print(e)
-        elif ext == 'img':
-            try:
-                return self._l0data.header.get(key)
-            except Exception as e:
-                print(e)
-        else:
-            raise CsstException
+        return self[hdu].header.get(key)
 
-    def set_l1keyword(self, key, value):
-        """ set  L1 keyword """
-        raise NotImplementedError("Well, not implemented...")
-
-    def set_l1data(self, *args, **kwargs):
-        print('save image data to l2data')
-        raise NotImplementedError
-
-    def get_auxdata(self, name):
-        """ get aux data
+    def set_keyword(self, key, value, hdu=1):
+        """ set keyword
 
         Parameters
         ----------
+        key:
+            key
+        value:
+            value
+        hdu:
+            0 for primary hdu, 1+ for raw hdu
+
         """
-        print('Parent class returns zero image.')
-        # return np.zeros_like(self.get_l0data())
+        self[hdu].header[key] = value
+        return
+
+    def set_data(self, data, hdu=1):
+        """ set image raw """
+        self[hdu].data = data
+        return
+
+    # def writeto(self, fp, overwrite=False):
+    #     """ save L1 image and aux raw to file
+    #
+    #     Parameters
+    #     ----------
+    #     fp: str
+    #         image type
+    #     overwrite : bool
+    #         if True, overwrite file
+    #     """
+    #     self.writeto(fp, overwrite=overwrite)
+
+    def get_auxdata(self):
+        """ get aux raw
+        In future, this is to automatically get aux raw from database.
+        """
         raise NotImplementedError
 
-    def save_l1data(self, imgtype, filename):
-        """ save L1 image and auxilary data to file
+    @classmethod
+    def read(cls, name, ignore_missing_simple=True):
+        """ read raw from fits file, should be implemented in child classes """
+        return cls.fromfile(name, ignore_missing_simple=ignore_missing_simple)
 
-        Parameters
-        ----------
-        imgtype: {}
-            image type
-        """
-        print("save L1 image to a fits file with name " + filename)
-        try:
-            self._l1hdr_global.set('TYPE', imgtype, 'Type of Level 1 data')
-            hdulist = fits.HDUList(
-                [
-                    fits.PrimaryHDU(header=self._l1hdr_global),
-                    fits.ImageHDU(header=self._l1data[imgtype].header, data=self._l1data[imgtype].data),
-                ]
-            )
-            hdulist.writeto(filename, overwrite=True)
-        except Exception as e:
-            print(e)
+    def deepcopy(self, name=None, data=None):
+        """ generate a deep copy of self """
+        cp = self.__class__(deepcopy(self))
+        if name is not None:
+            cp[1].name = name
+        if data is not None:
+            cp[1].data = data
+        return cp
 
-    def read(self, **kwargs):
-        """ read data from fits file """
-        raise NotImplementedError
+    @property
+    def data(self):
+        if len(self) == 1:
+            return self[1].data
+        return self[1].data
+
+    @property
+    def exptime(self):
+        return self[0].header["EXPTIME"]

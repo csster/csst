@@ -36,10 +36,10 @@ from csst.msc.data import CsstMscImgData
 from csst.msc.instrument import CsstMscInstrumentProc
 from astropy.io import fits
 
-# get aux data
-bs = fits.getdata("/data/ref/MSC_CLB_210525190000_100000014_13_combine.fits")
-dk = fits.getdata("/data/ref/MSC_CLD_210525192000_100000014_13_combine.fits")
-ft = fits.getdata("/data/ref/MSC_CLF_210525191000_100000014_13_combine.fits")
+# get aux raw
+bs = fits.getdata("/raw/ref/MSC_CLB_210525190000_100000014_13_combine.fits")
+dk = fits.getdata("/raw/ref/MSC_CLD_210525192000_100000014_13_combine.fits")
+ft = fits.getdata("/raw/ref/MSC_CLF_210525191000_100000014_13_combine.fits")
 
 fp_img_list = []
 fp_flg_list = []
@@ -47,10 +47,10 @@ fp_wht_list = []
 data_list = []
 
 for fp in fp_list:
-    # read image data
+    # read image raw
     data = CsstMscImgData.read(fp)
 
-    # set aux data
+    # set aux raw
     data.set_bias(bs)
     data.set_dark(dk)
     data.set_flat(ft)
@@ -66,7 +66,7 @@ for fp in fp_list:
     fp_flg = fp.replace("raw.fits", "flg.fits")
     fp_wht = fp.replace("raw.fits", "wht.fits")
 
-    # save l1 data
+    # save l1 raw
     data.save_l1data('sci', fp_img)
     data.save_l1data('flag', fp_flg)
     data.save_l1data('weight', fp_wht)
