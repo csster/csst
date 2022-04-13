@@ -40,9 +40,9 @@ for i_ccd in range(6, 26):
     instProc.cleanup()
 
     # save img, wht, flg to somewhere
-    img.writeto("{}/{}.fits".format(DIR_WORK, img.get_keyword("FILENAME")))
-    wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")))
-    flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")))
+    img.writeto("{}/{}.fits".format(DIR_WORK, img.get_keyword("FILENAME")), overwrite=True)
+    wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")), overwrite=True)
+    flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")), overwrite=True)
 
 """
 how to use CssMscImgData:
