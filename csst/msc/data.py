@@ -27,15 +27,19 @@ class CsstMscImgData(CsstData):
             hdus = []
         super(CsstMscImgData, self).__init__(hdus=hdus, file=file)
 
-        # meta info
-        self.instrument = self[0].header["INSTRUME"]
-        self.detector = self[0].header["DETECTOR"]
-
         # self._l1hdr_global = self[0].header.copy()
         # self._l1data = dict()
         # self._l1data['sci'] = ImageHDU()
         # self._l1data['weight'] = ImageHDU()
         # self._l1data['flag'] = ImageHDU()
+
+    @property
+    def instrument(self):
+        return self[0].header["INSTRUME"]
+
+    @property
+    def detector(self):
+        return self[0].header["DETECTOR"]
 
     def get_flat(self, fp):
         """ get flat """
