@@ -19,6 +19,10 @@ class CsstMscInstrumentProc(CsstProcessor):
     def __init__(self):
         super(CsstMscInstrumentProc).__init__()
 
+        self.__img = None
+        self.__wht = None
+        self.__flg = None
+
     def _do_fix(self, raw, bias, dark, flat):
         '''仪器效应改正
 
@@ -31,9 +35,9 @@ class CsstMscInstrumentProc(CsstProcessor):
             exptime: 曝光时长
         '''
         self.__img = np.divide(
-            raw.data - bias.data - dark.data * raw.exptime, flat.data,
+            raw.data - bias - dark * raw.exptime, flat,
             out=np.zeros_like(raw.data, float),
-            where=(flat.data != 0),
+            where=(flat != 0),
         )
 
     def _do_badpix(self, flat):
@@ -44,8 +48,9 @@ class CsstMscInstrumentProc(CsstProcessor):
         Args:
             flat: 平场
         '''
-        med = np.median(flat.data)
-        flg = (flat.data < 0.5 * med) | (1.5 * med < flat.data)
+        # TODO: flat-bias?
+        med = np.median(flat)
+        flg = (flat < 0.5 * med) | (1.5 * med < flat)
         self.__flg = self.__flg | (flg * 1)
 
     def _do_hot_and_warm_pix(self, dark, exptime, rdnoise):
@@ -60,7 +65,7 @@ class CsstMscInstrumentProc(CsstProcessor):
             exptime: 曝光时长
             rdnoise: 读出噪声
         '''
-        tmp = dark.data * exptime
+        tmp = dark * exptime
         tmp[tmp < 0] = 0
         flg = 1 * rdnoise ** 2 <= tmp  # 不确定是否包含 暂定包含
         self.__flg = self.__flg | (flg * 2)
@@ -136,7 +141,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         for name in kwargs:
             self._switches[name] = kwargs[name]
 
-    def run(self, raw: CsstMscImgData, bias, dark, flat):
+    def run(self, raw: CsstMscImgData, bias: np.ndarray, dark: np.ndarray, flat: np.ndarray):
 
         assert isinstance(raw, CsstMscImgData)
         self.__img = np.copy(raw.data)
@@ -164,4 +169,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         return img, wht, flg
 
     def cleanup(self):
+        self.__img = None
+        self.__wht = None
+        self.__flg = None
         pass
