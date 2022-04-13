@@ -22,6 +22,8 @@ from csst.msc.instrument import CsstMscInstrumentProc
 # from astropy.io import fits
 
 for i_ccd in range(6, 26):
+    if i_ccd in [10, 21]:
+        continue
     # i_ccd = 6
     print("processing CCD {}".format(i_ccd))
     fp_raw = glob.glob("{}/MSC_MS_*{:02}_raw.fits".format(DIR_TEST, i_ccd))
@@ -29,6 +31,7 @@ for i_ccd in range(6, 26):
     fp_raw = fp_raw[0]
 
     raw = CsstMscImgData.read(fp_raw)
+    # in future, get_* functions grab
     bias = raw.get_bias(PATH_BIAS.format(i_ccd))
     dark = raw.get_dark(PATH_DARK.format(i_ccd))
     flat = raw.get_flat(PATH_FLAT.format(i_ccd))
