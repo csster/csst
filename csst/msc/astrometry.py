@@ -1,4 +1,7 @@
 from ..core.processor import CsstProcessor
+from .. import PACKAGE_PATH
+
+CONFIG_SCAMP = PACKAGE_PATH + "/msc/config/test.txt"
 
 
 class CsstProcMscPositionCalibration(CsstProcessor):
@@ -10,9 +13,13 @@ class CsstProcMscPositionCalibration(CsstProcessor):
 
     def run(self, data, *args, **kwargs):
         # run your pipeline here
-        # make sure that your input data should be a child class instance of CsstData.
+        # make sure that your input raw should be a child class instance of CsstData.
         pass
 
     def cleanup(self, **kwargs):
         # clean up environment
         pass
+
+
+def test_dir():
+    print(CONFIG_SCAMP)

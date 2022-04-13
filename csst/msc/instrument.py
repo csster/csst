@@ -94,7 +94,7 @@ class CsstMscInstrumentProc(CsstProcessor):
             inpaint_model = 'ACS-WFC-F606W-2-32'
             model = deepCR(clean_model, inpaint_model, device='CPU', hidden=50)
             masked, cleaned = model.clean(
-                self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=True, n_jobs=2)
+                self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=True, n_jobs=self.n_jobs)
         else:
             cleaned, masked = cosmicray_lacosmic(ccd=self.__img,
                                                  sigclip=3.,  # cr_threshold
@@ -137,7 +137,8 @@ class CsstMscInstrumentProc(CsstProcessor):
         weight[self.__flg > 0] = 0
         self.__wht = weight
 
-    def prepare(self, **kwargs):
+    def prepare(self, n_jobs=2, **kwargs):
+        self.n_jobs = n_jobs
         for name in kwargs:
             self._switches[name] = kwargs[name]
 
@@ -165,6 +166,9 @@ class CsstMscInstrumentProc(CsstProcessor):
         img = raw.deepcopy(name="SCI", data=self.__img)
         wht = raw.deepcopy(name="WHT", data=self.__wht)
         flg = raw.deepcopy(name="FLG", data=self.__flg)
+        img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
+        wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
+        flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
 
         return img, wht, flg
 
