@@ -1,2 +1,0 @@
-python3.8 run_astrom_csst.v5.py '/line17/Jundan/csst/c3_data/input_v3/MSC*fits' 
--o /line17/Jundan/csst/c3_data/out_put/v5/ -df
