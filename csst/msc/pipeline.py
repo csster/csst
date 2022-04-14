@@ -1,19 +1,32 @@
 
 # def do_one_exposure():
 
-# node name
-HOST = "tulip"
-# working directory
-DIR_WORK = "/share/HDD7/csstpipeline/msc"
-# gaia catalog directory (for position calibration)
-DIR_GAIA_CATALOG = ""
-
-DIR_TEST = "/share/Cycle-3-SimuData/multipleBandsImaging/CSST_shearOFF/MSC_0000020/"  #  MSC_MS_210525220000_100000020_06_raw.fits
-PATH_BIAS = "/share/HDD7/csstpipeline/ref/MSC_CLB_210525200000_100000016_{:02d}_combine.fits"
-PATH_DARK = "/share/HDD7/csstpipeline/ref/MSC_CLD_210525202000_100000016_{:02d}_combine.fits"
-PATH_FLAT = "/share/HDD7/csstpipeline/ref/MSC_CLF_210525201000_100000016_{:02d}_combine.fits"
-
 import os
+HOSTNAME = os.uname()[1]
+if HOSTNAME == "tulip":
+    # on Tulip
+    DIR_TEST = "/share/Cycle-3-SimuData/multipleBandsImaging/CSST_shearOFF/MSC_0000020/"  #  MSC_MS_210525220000_100000020_06_raw.fits
+    PATH_BIAS = "/share/HDD7/csstpipeline/ref/MSC_CLB_210525200000_100000016_{:02d}_combine.fits"
+    PATH_DARK = "/share/HDD7/csstpipeline/ref/MSC_CLD_210525202000_100000016_{:02d}_combine.fits"
+    PATH_FLAT = "/share/HDD7/csstpipeline/ref/MSC_CLF_210525201000_100000016_{:02d}_combine.fits"
+    DIR_WORK = "/share/HDD7/csstpipeline/msc"
+    # gaia catalog directory (for position calibration)
+    DIR_GAIA_CATALOG = ""
+
+elif HOSTNAME == "Dandelion":
+    # on Dandelion
+    DIR_TEST = "/home/csstpipeline/L1Pipeline/msc/MSC_0000020"
+    PATH_BIAS = "/home/csstpipeline/L1Pipeline/msc/ref/MSC_CLB_210525200000_100000016_{:02d}_combine.fits"
+    PATH_DARK = "/home/csstpipeline/L1Pipeline/msc/ref/MSC_CLD_210525202000_100000016_{:02d}_combine.fits"
+    PATH_FLAT = "/home/csstpipeline/L1Pipeline/msc/ref/MSC_CLF_210525201000_100000016_{:02d}_combine.fits"
+    # working directory
+    DIR_WORK = "/home/csstpipeline/L1Pipeline/msc/work"
+    # gaia catalog directory (for position calibration)
+    DIR_GAIA_CATALOG = ""
+
+else:
+    raise ValueError("Invalid HOSTNAME {}!".format(HOSTNAME))
+
 os.chdir(DIR_WORK)
 
 import glob
