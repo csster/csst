@@ -59,6 +59,8 @@ for i_ccd in range(6, 26):
     img.writeto("{}/{}.fits".format(DIR_WORK, img.get_keyword("FILENAME")), overwrite=True)
     wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")), overwrite=True)
     flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")), overwrite=True)
+    # save header
+    img[1].header.totextfile("{}/{}.head".format(DIR_WORK, img.get_keyword("FILENAME").replace(".fits", "")), overwrite=True)
 
 """
 how to use CssMscImgData:
@@ -71,8 +73,10 @@ how to use CssMscImgData:
 from csst.msc.astrometry import CsstProcMscPositionCalibration
 pcProc = CsstProcMscPositionCalibration()
 pcProc.prepare(search_radius=2.,)
-pcProc.run(data_list)
+cat = pcProc.run(data_list)
 pcProc.cleanup()
+
+
 
 
 
