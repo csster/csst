@@ -146,7 +146,7 @@ class CsstMscInstrumentProc(CsstProcessor):
 
         assert isinstance(raw, CsstMscImgData)
         self.__img = np.copy(raw.data)
-        self.__wht = np.zeros_like(raw.data, dtype=float)
+        self.__wht = np.zeros_like(raw.data, dtype=np.float32)
         self.__flg = np.zeros_like(raw.data, dtype=np.uint16)
 
         exptime = raw.get_keyword('EXPTIME', hdu=0)
@@ -163,9 +163,9 @@ class CsstMscInstrumentProc(CsstProcessor):
 
         print('finish the run and save the results back to CsstData')
 
-        img = raw.deepcopy(name="SCI", data=self.__img)
-        wht = raw.deepcopy(name="WHT", data=self.__wht)
-        flg = raw.deepcopy(name="FLG", data=self.__flg)
+        img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32))
+        wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
+        flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.float32))
         img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
         wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0).replace("_raw", "_wht"), hdu=0)
         flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0).replace("_raw", "_flg"), hdu=0)
