@@ -3,9 +3,9 @@
 import glob
 import os
 
-from csst.msc.astrometry import CsstProcMscPositionCalibration
 from csst.msc.data import CsstMscImgData
-from csst.msc.instrument import CsstMscInstrumentProc
+from csst.msc.calib_pos import CsstProcMscPositionCalibration
+from csst.msc.inst_corr import CsstMscInstrumentProc
 
 HOSTNAME = os.uname()[1]
 if HOSTNAME == "tulip":
@@ -32,8 +32,11 @@ elif HOSTNAME == "Dandelion":
 else:
     raise ValueError("Invalid HOSTNAME {}!".format(HOSTNAME))
 
+# define CCD ID list
 CCD_ID_LIST = [6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25]
 
+
+# Step 1. Correct instrumental effect
 os.chdir(DIR_WORK)
 
 img_list = []
@@ -46,6 +49,7 @@ for i_ccd in CCD_ID_LIST:
     assert len(fp_raw) == 1
     fp_raw = fp_raw[0]
 
+    # read data with CsstMscImgData.read
     raw = CsstMscImgData.read(fp_raw)
     # in future, get_* functions grab
     bias = raw.get_bias(PATH_BIAS.format(i_ccd))
@@ -71,13 +75,7 @@ for i_ccd in CCD_ID_LIST:
     img[1].header.tofile("{}/{}.head".format(DIR_WORK, img.get_keyword("FILENAME").replace(".fits", "")),
                          overwrite=True)
 
-"""
-how to use CssMscImgData:
-
- img = CsstMscImgData.read(filename)
-"""
-
-# position calibration
+# Step 2. Calibrate Position
 pcProc = CsstProcMscPositionCalibration()
 if img_list:
     pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
@@ -100,3 +98,11 @@ else:
         fn_list.append(fp_img)
     pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
 pcProc.cleanup(img_list, DIR_WORK)
+
+
+# Step 3. Calibrate Flux
+# from csst.msc.calib_flux import CsstProcMscFluxCalibration
+# fcProc = CsstProcMscFluxCalibration()
+# fcProc.prepare()
+# fcProc.run()
+# fcProc.cleanup()
