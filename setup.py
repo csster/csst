@@ -28,8 +28,9 @@ setuptools.setup(
     package_dir={'csst': 'csst'},
     include_package_data=True,
     package_data={"": ["LICENSE", "README.md"],
-                  "csst": ["msc/astrometry_config/*",
-                           "msc/deepcr_model/*"
+                  "csst": ["msc/deepcr_model/*",
+                           "msc/pos_calib_config/*",
+                           "msc/flux_calib_config/*",
                            ]},
     # install_requires=['sphinx>=4.2.0',
     #                   'numpy>=1.22.0',
