@@ -28,9 +28,12 @@ setuptools.setup(
     package_dir={'csst': 'csst'},
     include_package_data=False,
     package_data={"": ["LICENSE", "README.md"],
-                  "csst": ["msc/config/*",
+                  "csst": ["msc/astrometry_config/*",
                            "msc/deepcr_model/*"
                            ]},
-    requires=['numpy', 'scipy', 'astropy'],
+    # install_requires=['sphinx>=4.2.0',
+    #                   'numpy>=1.22.0',
+    #                   'scipy', 'matplotlib',
+    #                   'astropy', 'healpy', 'ccdproc', 'deepCR'],
     python_requires='>=3.7',
 )
