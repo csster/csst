@@ -165,7 +165,7 @@ class CsstMscInstrumentProc(CsstProcessor):
 
         img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32))
         wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
-        flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.float32))
+        flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.uint16))
         img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
         wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0).replace("_raw", "_wht"), hdu=0)
         flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0).replace("_raw", "_flg"), hdu=0)
