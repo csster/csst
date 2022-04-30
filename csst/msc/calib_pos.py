@@ -15,7 +15,7 @@ from astropy.wcs import WCS
 from .. import PACKAGE_PATH
 from ..core.processor import CsstProcessor
 
-path_config = PACKAGE_PATH + "/msc/astrometry_config/"
+CONFIG_PATH = PACKAGE_PATH + "/msc/pos_calib_config/"
 
 
 class CsstProcMscPositionCalibration(CsstProcessor):
@@ -88,10 +88,10 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         The photometric catalog, with position and flux, e.g.,MSC_210304093000_0000000_06_img.acat
         """
         fn = fn_list
-        config_sextractor = path_config + "new_csst_realtime.no.weight.sex"
+        config_sextractor = CONFIG_PATH + "new_csst_realtime.no.weight.sex"
         sex_comd1 = 'sex -c ' + config_sextractor + ' '
         sex_comd2 = fn + ' -CATALOG_NAME ' + fn[0:-5] + '.acat'
-        sex_comd3 = ' -PARAMETERS_NAME ' + path_config + 'csst_realtime.param' + ' -FILTER_NAME ' + path_config + 'csst_realtime.conv' + ' -STARNNW_NAME ' + path_config + 'csst_realtime.nnw'
+        sex_comd3 = ' -PARAMETERS_NAME ' + CONFIG_PATH + 'csst_realtime.param' + ' -FILTER_NAME ' + CONFIG_PATH + 'csst_realtime.conv' + ' -STARNNW_NAME ' + CONFIG_PATH + 'csst_realtime.nnw'
         sex_comd = sex_comd1 + sex_comd2 + sex_comd3
         print(sex_comd)
         p = Popen(sex_comd, shell=True)
@@ -143,7 +143,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         Image header updated with WCS keywords, MSC_210304093000_0000000.acat.head.
         """
         image_prefix = (img_list[0][0].header)['FILENAME'][0:-7]
-        config_scamp = path_config + "default2.scamp"
+        config_scamp = CONFIG_PATH + "default2.scamp"
         scamp_comd = 'scamp ' + image_prefix + '.acat.fits -ASTREFCAT_NAME= ' + 'ref.cat\
         -MERGEDOUTCAT_NAME ' + 'merged.cat -FULLOUTCAT_NAME ' + 'full.cat\
         -c ' + config_scamp
