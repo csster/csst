@@ -26,7 +26,7 @@ setuptools.setup(
                  "Topic :: Scientific/Engineering :: Physics",
                  "Topic :: Scientific/Engineering :: Astronomy"],
     package_dir={'csst': 'csst'},
-    include_package_data=True,
+    # include_package_data=True,
     package_data={"": ["LICENSE", "README.md"],
                   "csst": ["msc/deepcr_model/*",
                            "msc/pos_calib_config/*",
