@@ -1,7 +1,7 @@
 from .. import PACKAGE_PATH
 from ..core.processor import CsstProcessor
 
-path_config = PACKAGE_PATH + "/msc/astrometry_config/"
+path_config = PACKAGE_PATH + "/msc/flux_calib_config/"
 
 
 class CsstProcFluxCalibration(CsstProcessor):

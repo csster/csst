@@ -35,6 +35,10 @@ else:
 # define CCD ID list
 CCD_ID_LIST = [6, 7, 8, 9, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25]
 
+# prohibit multi-threading in backend
+os.environ["MKL_NUM_THREADS"] = '1'
+os.environ["NUMEXPR_NUM_THREADS"] = '1'
+os.environ["OMP_NUM_THREADS"] = '1'
 
 # Step 1. Correct instrumental effect
 os.chdir(DIR_WORK)
@@ -62,47 +66,46 @@ for i_ccd in CCD_ID_LIST:
     img, wht, flg = instProc.run(raw, bias, dark, flat)
     instProc.cleanup()
     fp_img = img[0].header["FILENAME"] + '.fits'
+
+    # save img, wht, flg to somewhere
+    img.writeto("{}/{}.fits".format(DIR_WORK, img.get_keyword("FILENAME")), overwrite=True)
+    wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")), overwrite=True)
+    flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")), overwrite=True)
+    # save header
+    img[1].header.tofile("{}/{}.head".format(DIR_WORK, img.get_keyword("FILENAME").replace(".fits", "")),
+                         overwrite=True)
+
     # append img, wht, flg list
     img_list.append(img)
     wht_list.append(wht)
     flg_list.append(flg)
     fn_list.append(fp_img)
 
-    # save img, wht, flg to somewhere
-    img.writeto("{}/{}.fits".format(DIR_WORK, img.get_keyword("FILENAME")), overwrite=True)
-    wht.writeto("{}/{}.fits".format(DIR_WORK, wht.get_keyword("FILENAME")), overwrite=True)
-    flg.writeto("{}/{}.fits".format(DIR_WORK, flg.get_keyword("FILENAME")), overwrite=True)
-    img[1].header.tofile("{}/{}.head".format(DIR_WORK, img.get_keyword("FILENAME").replace(".fits", "")),
-                         overwrite=True)
 
 # Step 2. Calibrate Position
 pcProc = CsstProcMscPositionCalibration()
-if img_list:
-    pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
-else:
-    for i_ccd in range(6, 26):
-        if i_ccd in [10, 21]:
-            continue
-        fp_img = glob.glob("{}/MSC_MS_*_{:02}_img.fits".format(DIR_WORK, i_ccd))
-        fp_wht = glob.glob("{}/MSC_MS_*_{:02}_wht.fits".format(DIR_WORK, i_ccd))
-        fp_flg = glob.glob("{}/MSC_MS_*_{:02}_flg.fits".format(DIR_WORK, i_ccd))
-        fp_img = fp_img[0]
-        fp_wht = fp_wht[0]
-        fp_flg = fp_flg[0]
-        img = CsstMscImgData.read(fp_img)
-        wht = CsstMscImgData.read(fp_wht)
-        flg = CsstMscImgData.read(fp_flg)
-        img_list.append(img)
-        wht_list.append(wht)
-        flg_list.append(flg)
-        fn_list.append(fp_img)
-    pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
+pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
+# if img_list:
+#     pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
+# else:
+#     for i_ccd in CCD_ID_LIST:
+#         fp_img = "{}/MSC_MS_*_{:02}_img.fits".format(DIR_WORK, i_ccd)
+#         fp_wht = "{}/MSC_MS_*_{:02}_wht.fits".format(DIR_WORK, i_ccd)
+#         fp_flg = "{}/MSC_MS_*_{:02}_flg.fits".format(DIR_WORK, i_ccd)
+#         img = CsstMscImgData.read(fp_img)
+#         wht = CsstMscImgData.read(fp_wht)
+#         flg = CsstMscImgData.read(fp_flg)
+#         img_list.append(img)
+#         wht_list.append(wht)
+#         flg_list.append(flg)
+#         fn_list.append(fp_img)
+#     pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
 pcProc.cleanup(img_list, DIR_WORK)
 
 
 # Step 3. Calibrate Flux
-# from csst.msc.calib_flux import CsstProcMscFluxCalibration
-# fcProc = CsstProcMscFluxCalibration()
-# fcProc.prepare()
-# fcProc.run()
-# fcProc.cleanup()
+from csst.msc.calib_flux import CsstProcFluxCalibration
+fcProc = CsstProcFluxCalibration()
+fcProc.prepare()
+fcProc.run()
+fcProc.cleanup()
