@@ -106,6 +106,6 @@ pcProc.cleanup(img_list, DIR_WORK)
 # Step 3. Calibrate Flux
 from csst.msc.calib_flux import CsstProcFluxCalibration
 fcProc = CsstProcFluxCalibration()
-fcProc.prepare()
-fcProc.run()
-fcProc.cleanup()
+#fcProc.prepare()
+fcProc.run(fn_list,img_list, wht_list, flg_list,wcsdir=DIR_WORK,L1dir=DIR_WORK,workdir=DIR_WORK,refdir=DIR_TEST,addhead=True,morehead=False,plot=False,nodel=False,update=False,upcat=True)
+fcProc.cleanup(fn_list,DIR_WORK)
