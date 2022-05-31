@@ -3,8 +3,8 @@
 import glob
 import os
 
-from csst.msc.data import CsstMscImgData
 from csst.msc.calib_pos import CsstProcMscPositionCalibration
+from csst.msc.data import CsstMscImgData
 from csst.msc.inst_corr import CsstMscInstrumentProc
 
 HOSTNAME = os.uname()[1]
@@ -28,6 +28,9 @@ elif HOSTNAME == "Dandelion":
     DIR_WORK = "/home/csstpipeline/L1Pipeline/msc/work/"
     # gaia catalog directory (for position calibration)
     DIR_GAIA_CATALOG = "/home/csstpipeline/L1Pipeline/msc/gaia_dr3/"
+
+    # only 18 cores available in cloud machine from PMO
+    NJOBS = 18
 
 else:
     raise ValueError("Invalid HOSTNAME {}!".format(HOSTNAME))
@@ -81,7 +84,6 @@ for i_ccd in CCD_ID_LIST:
     flg_list.append(flg)
     fn_list.append(fp_img)
 
-
 # Step 2. Calibrate Position
 pcProc = CsstProcMscPositionCalibration()
 pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
@@ -102,10 +104,18 @@ pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.
 #     pcProc.run(img_list, wht_list, flg_list, fn_list, DIR_GAIA_CATALOG, DIR_WORK, 2.0)
 pcProc.cleanup(img_list, DIR_WORK)
 
-
 # Step 3. Calibrate Flux
 from csst.msc.calib_flux import CsstProcFluxCalibration
 fcProc = CsstProcFluxCalibration()
-#fcProc.prepare()
-fcProc.run(fn_list,img_list, wht_list, flg_list,wcsdir=DIR_WORK,L1dir=DIR_WORK,workdir=DIR_WORK,refdir=DIR_TEST,addhead=True,morehead=False,plot=False,nodel=False,update=False,upcat=True)
-fcProc.cleanup(fn_list,DIR_WORK)
+# fcProc.prepare()
+fcProc.run(fn_list, img_list, wht_list, flg_list, wcsdir=DIR_WORK, L1dir=DIR_WORK, workdir=DIR_WORK, refdir=DIR_TEST,
+           addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
+fcProc.cleanup(fn_list, DIR_WORK)
+
+# Step 4. Photometry
+from csst.msc.phot import CsstMscPhotometryProc
+ptProc = CsstMscPhotometryProc()
+ptProc.prepare()
+ptProc.run(fn_list, out_dir=DIR_WORK, n_jobs=18)
+ptProc.cleanup()
+
