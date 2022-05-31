@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import torch
 import numpy as np
 from ccdproc import cosmicray_lacosmic
 from deepCR import deepCR
@@ -23,6 +24,9 @@ class CsstMscInstrumentProc(CsstProcessor):
         self.__img = None
         self.__wht = None
         self.__flg = None
+
+    def set_num_threads(self, n_threads=1):
+        torch.set_num_threads(n_threads)
 
     def _do_fix(self, raw, bias, dark, flat):
         '''仪器效应改正
@@ -100,7 +104,7 @@ class CsstMscInstrumentProc(CsstProcessor):
                     n_jobs=self.n_jobs)
             else:
                 masked, cleaned = model.clean(
-                    self.__img, threshold=0.5, inpaint=True, segment=False, patch=256, parallel=False,
+                    self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=False,
                     n_jobs=self.n_jobs)
         else:
             cleaned, masked = cosmicray_lacosmic(ccd=self.__img,
@@ -144,8 +148,9 @@ class CsstMscInstrumentProc(CsstProcessor):
         weight[self.__flg > 0] = 0
         self.__wht = weight
 
-    def prepare(self, n_jobs=2, **kwargs):
+    def prepare(self, n_jobs=2, n_threads=1, **kwargs):
         self.n_jobs = n_jobs
+        self.set_num_threads(n_threads)
         for name in kwargs:
             self._switches[name] = kwargs[name]
 
