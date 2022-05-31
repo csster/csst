@@ -94,8 +94,14 @@ class CsstMscInstrumentProc(CsstProcessor):
             clean_model = DEEPCR_MODEL_PATH
             inpaint_model = 'ACS-WFC-F606W-2-32'
             model = deepCR(clean_model, inpaint_model, device='CPU', hidden=50)
-            masked, cleaned = model.clean(
-                self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=False, n_jobs=self.n_jobs)
+            if self.n_jobs > 1:
+                masked, cleaned = model.clean(
+                    self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=True,
+                    n_jobs=self.n_jobs)
+            else:
+                masked, cleaned = model.clean(
+                    self.__img, threshold=0.5, inpaint=True, segment=False, patch=256, parallel=False,
+                    n_jobs=self.n_jobs)
         else:
             cleaned, masked = cosmicray_lacosmic(ccd=self.__img,
                                                  sigclip=3.,  # cr_threshold
