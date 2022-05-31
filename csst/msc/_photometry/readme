@@ -1,0 +1,9 @@
+how to use csst photometry pipeline
+Package dependencies: latest versions of "SExtrator" and "PSFEx"
+1. python3.8 csst_photometry.py csst_image  -o output_path 
+2. use the API in a pipeline
+   from csst_photometry  import do_phot
+   imagefile='/line17/csst/simulation_new/MSC_MS_210525121500_100000001_01_img.fits' 
+   outdir='./'
+   do_phot(imagefile,outdir=outdir) 
+ 
