@@ -278,17 +278,21 @@ def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm
         raise OSError('No sex or psfex SHELL command found! Please install')
 
     rootname, _ = os.path.splitext(fitsfile)
-    indpos = str.rfind(rootname, '_img')
-    flagfile = rootname[:indpos] + '_flg.fits'
-    weightfile = rootname[:indpos] + '_wht.fits'
+    # indpos = str.rfind(rootname, '_img')
+    # flagfile = rootname[:indpos] + '_flg.fits'
+    # weightfile = rootname[:indpos] + '_wht.fits'
+    flagfile = fitsfile.replace("_img", "_flg")
+    weightfile = fitsfile.replace("_img", "_wht")
+
     head = fits.getheader(fitsfile, 0)
     gain = head['exptime']
     saturate = 50000.0 / gain
 
     # fitsname,_=os.path.splitext(fitsfile)
     if outdir is not None:
-        _, filename = os.path.split(rootname[:indpos])
-        fitsname = os.path.join(outdir, filename)
+        # _, filename = os.path.split(rootname[:indpos])
+        # fitsname = os.path.join(outdir, filename)
+        fitsname = os.path.join(outdir, os.path.basename(fitsfile))
 
     sexfile = os.path.join(CONFIG_PATH, 'csst_psfex.sex')
     covfile = os.path.join(CONFIG_PATH, filter_name)
@@ -383,10 +387,14 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
 
     # get flag and weight images
     # flagfile,weightfile=get_flagweght(date,ccd)
-    rootname, _ = os.path.splitext(fitsfile)
-    indpos = str.rfind(rootname, '_img')
-    flagfile = rootname[:indpos] + '_flg.fits'
-    weightfile = rootname[:indpos] + '_wht.fits'
+
+    # rootname, _ = os.path.splitext(fitsfile)
+    # indpos = str.rfind(rootname, '_img')
+    # flagfile = rootname[:indpos] + '_flg.fits'
+    # weightfile = rootname[:indpos] + '_wht.fits'
+    flagfile = fitsfile.replace("_img", "_flg")
+    weightfile = fitsfile.replace("_img", "_wht")
+
     gain = head['exptime']
 
     types = {'sky': 'BACKGROUND', 'seg': 'SEGMENTATION', 'mod': 'MODELS', 'res': '-MODELS'}
