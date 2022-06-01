@@ -1,0 +1,168 @@
+NUMBER                    #Running object number                                    
+FLUX_APER(12)             #Flux vector within fixed circular aperture(s)             [count]
+FLUXERR_APER(12)          #RMS error vector for aperture flux(es)                    [count]
+#MAG_APER(12)              #Fixed aperture magnitude vector                           [mag]
+#MAGERR_APER(12)           #RMS error vector for fixed aperture mag.                  [mag]
+FLUX_AUTO                 #Flux within a Kron-like elliptical aperture               [count]
+FLUXERR_AUTO              #RMS error for AUTO flux                                   [count]
+#MAG_AUTO                  #Kron-like elliptical aperture magnitude                   [mag]
+#MAGERR_AUTO               #RMS error for AUTO magnitude                              [mag]
+KRON_RADIUS               #Kron apertures in units of A or B                        
+BACKGROUND                #Background at centroid position                           [count]
+X_IMAGE                   #Object position along x                                   [pixel]
+Y_IMAGE                   #Object position along y                                   [pixel]
+ALPHA_J2000               #Right ascension of barycenter (J2000)                     [deg]
+DELTA_J2000               #Declination of barycenter (J2000)                         [deg]
+A_IMAGE                   #Profile RMS along major axis                              [pixel]
+B_IMAGE                   #Profile RMS along minor axis                              [pixel]
+THETA_IMAGE               #Position angle (CCW/x)                                    [deg]
+A_WORLD                   #Profile RMS along major axis (world units)                [deg]
+B_WORLD                   #Profile RMS along minor axis (world units)                [deg]
+THETA_WORLD               #Position angle (CCW/world-x)                              [deg]
+THETA_J2000               #Position angle (east of north) (J2000)                    [deg]
+ERRX2_IMAGE               #Variance of position along x                              [pixel**2]
+ERRY2_IMAGE               #Variance of position along y                              [pixel**2]
+ERRA_IMAGE                #RMS position error along major axis                       [pixel]
+ERRB_IMAGE                #RMS position error along minor axis                       [pixel]
+ERRTHETA_IMAGE            #Error ellipse position angle (CCW/x)                      [deg]
+ERRA_WORLD                #World RMS position error along major axis                 [deg]
+ERRB_WORLD                #World RMS position error along minor axis                 [deg]
+ERRTHETA_WORLD            #Error ellipse pos. angle (CCW/world-x)                    [deg]
+ERRTHETA_J2000            #J2000 error ellipse pos. angle (east of north)            [deg]
+XWIN_IMAGE                #Windowed position estimate along x                        [pixel]
+YWIN_IMAGE                #Windowed position estimate along y                        [pixel]
+ALPHAWIN_J2000            #Windowed right ascension (J2000)                          [deg]
+DELTAWIN_J2000            #windowed declination (J2000)                              [deg]
+ERRX2WIN_IMAGE            #Variance of windowed pos along x                          [pixel**2]
+ERRY2WIN_IMAGE            #Variance of windowed pos along y                          [pixel**2]
+FLAGS                     #Extraction flags
+FLAGS_WEIGHT              #Weighted extraction flags                                
+IMAFLAGS_ISO              #FLAG-image flags OR'ed over the iso. profile             
+NIMAFLAGS_ISO             #Number of flagged pixels entering IMAFLAGS_ISO
+FWHM_IMAGE                #FWHM assuming a gaussian core                             [pixel]
+FWHM_WORLD                #FWHM assuming a gaussian core                             [deg]
+ELONGATION                #A_IMAGE/B_IMAGE                                          
+ELLIPTICITY               #1 - B_IMAGE/A_IMAGE                                      
+CLASS_STAR                #S/G classifier output                                    
+FLUX_RADIUS               #Fraction-of-light radii                                   [pixel]
+FWHMPSF_IMAGE             #FWHM of the local PSF model                               [pixel]
+FWHMPSF_WORLD             #FWHM of the local PSF model (world units)                 [deg]
+XPSF_IMAGE                #X coordinate from PSF-fitting                             [pixel]
+YPSF_IMAGE                #Y coordinate from PSF-fitting                             [pixel]
+ALPHAPSF_J2000            #Right ascension of the fitted PSF (J2000)                 [deg]
+DELTAPSF_J2000            #Declination of the fitted PSF (J2000)                     [deg]
+FLUX_PSF                  #Flux from PSF-fitting                                     [count]
+FLUXERR_PSF               #RMS flux error for PSF-fitting                            [count]
+#MAG_PSF                   #Magnitude from PSF-fitting                                [mag]
+#MAGERR_PSF                #RMS magnitude error from PSF-fitting                      [mag]
+NITER_PSF                 #Number of iterations for PSF-fitting                     
+CHI2_PSF                  #Reduced chi2 from PSF-fitting                            
+ERRX2PSF_IMAGE            #Variance of PSF position along x                          [pixel**2]
+ERRY2PSF_IMAGE            #Variance of PSF position along y                          [pixel**2]
+CHI2_MODEL                #Reduced Chi2 of the fit                                  
+FLAGS_MODEL               #Model-fitting flags                                      
+NITER_MODEL               #Number of iterations for model-fitting                   
+FLUX_MODEL                #Flux from model-fitting                                   [count]
+FLUXERR_MODEL             #RMS error on model-fitting flux                           [count]
+#MAG_MODEL                 #Magnitude from model-fitting                              [mag]
+#MAGERR_MODEL              #RMS error on model-fitting magnitude                      [mag]
+FLUX_HYBRID               #Hybrid flux from model-fitting                            [count]
+FLUXERR_HYBRID            #RMS error on hybrid flux                                  [count]
+#MAG_HYBRID                #Hybrid magnitude from model-fitting                       [mag]
+#MAGERR_HYBRID             #RMS error on hybrid magnitude                             [mag]
+FLUX_MAX_MODEL            #Peak model flux above background                          [count]
+FLUX_EFF_MODEL            #Effective model flux above background                     [count]
+FLUX_MEAN_MODEL           #Mean effective model flux above background                [count]
+#MU_MAX_MODEL              #Peak model surface brightness above background            [mag * arcsec**(-2)]
+#MU_EFF_MODEL              #Effective model surface brightness above background       [mag * arcsec**(-2)]
+#MU_MEAN_MODEL             #Mean effective model surface brightness above background  [mag * arcsec**(-2)]
+XMODEL_IMAGE              #X coordinate from model-fitting                           [pixel]
+YMODEL_IMAGE              #Y coordinate from model-fitting                           [pixel]
+ALPHAMODEL_J2000          #Fitted position along right ascension (J2000)             [deg]
+DELTAMODEL_J2000          #Fitted position along declination (J2000)                 [deg]
+ERRY2MODEL_IMAGE          #Variance of fitted position along y                       [pixel**2]
+ERRY2MODEL_IMAGE          #Variance of fitted position along y
+ERRAMODEL_IMAGE           #RMS error of fitted position along major axis             [pixel]
+ERRBMODEL_IMAGE           #RMS error of fitted position along minor axis             [pixel]
+ERRTHETAMODEL_IMAGE       #Error ellipse pos.angle of fitted position (CCW/x)        [deg]
+ERRAMODEL_WORLD           #World RMS error of fitted position along major axis       [deg]
+ERRBMODEL_WORLD           #World RMS error of fitted position along minor axis       [deg]
+ERRTHETAMODEL_WORLD       #Error ellipse pos.angle of fitted position (CCW/world-x)  [deg]
+ERRTHETAMODEL_J2000       #J2000 fitted error ellipse pos. angle (east of north)     [deg]
+AMODEL_IMAGE              #Model RMS along major axis                                [pixel]
+BMODEL_IMAGE              #Model RMS along minor axis                                [pixel]
+THETAMODEL_IMAGE          #Model position angle (CCW/x)                              [deg]
+AMODEL_WORLD              #Model RMS along major axis (WORLD units)                  [deg]
+BMODEL_WORLD              #Model RMS along minor axis (WORLD units)                  [deg]
+THETAMODEL_WORLD          #Model position angle (CCW/WORLD-x)                        [deg]
+THETAMODEL_J2000          #Model position angle (east of north) (J2000)              [deg]
+SPREAD_MODEL              #Spread parameter from model-fitting                      
+SPREADERR_MODEL           #Spread parameter error from model-fitting                
+NOISEAREA_MODEL           #Equivalent noise area of the fitted model                 [pixel**2]
+#FLUX_POINTSOURCE         #Point source flux from fitting                            [count]
+#FLUXERR_POINTSOURCE      #RMS error on fitted point source total flux               [count]
+#FLUXRATIO_POINTSOURCE    #Point-source flux-to-total ratio from fitting            
+#FLUXRATIOERR_POINTSOURCE #RMS error on point-source flux-to-total ratio            
+#MAG_POINTSOURCE          #Point source total magnitude from fitting                 [mag]
+#MAGERR_POINTSOURCE       #RMS error on fitted point source total magnitude          [mag]
+FLUX_SPHEROID             #Spheroid total flux from fitting                          [count]
+FLUXERR_SPHEROID          #RMS error on fitted spheroid total flux                   [count]
+#MAG_SPHEROID              #Spheroid total magnitude from fitting                     [mag]
+#MAGERR_SPHEROID           #RMS error on fitted spheroid total magnitude              [mag]
+FLUX_MAX_SPHEROID         #Peak spheroid flux above background                       [count]
+FLUX_EFF_SPHEROID         #Effective spheroid flux above background                  [count]
+FLUX_MEAN_SPHEROID        #Mean effective spheroid flux above background             [count]
+#MU_MAX_SPHEROID           #Peak spheroid surface brightness above background         [mag * arcsec**(-2)]
+#MU_EFF_SPHEROID           #Effective spheroid surface brightness above background    [mag * arcsec**(-2)]
+#MU_MEAN_SPHEROID          #Mean effective spheroid surface brightness above backgrou [mag * arcsec**(-2)]
+FLUXRATIO_SPHEROID        #Spheroid flux-to-total ratio from fitting                
+FLUXRATIOERR_SPHEROID     #RMS error on spheroid flux-to-total ratio                
+SPHEROID_REFF_IMAGE       #Spheroid effective radius from fitting                    [pixel]
+SPHEROID_REFFERR_IMAGE    #RMS error on fitted spheroid effective radius             [pixel]
+SPHEROID_REFF_WORLD       #Spheroid effective radius from fitting                    [deg]
+SPHEROID_REFFERR_WORLD    #RMS error on fitted spheroid effective radius             [deg]
+SPHEROID_ASPECT_IMAGE     #Spheroid aspect ratio from fitting                       
+SPHEROID_ASPECTERR_IMAGE  #RMS error on fitted spheroid aspect ratio                
+SPHEROID_ASPECT_WORLD     #Spheroid aspect ratio from fitting                       
+SPHEROID_ASPECTERR_WORLD  #RMS error on fitted spheroid aspect ratio                
+SPHEROID_THETA_IMAGE      #Spheroid position angle (CCW/x) from fitting              [deg]
+SPHEROID_THETAERR_IMAGE   #RMS error on spheroid position angle                      [deg]
+SPHEROID_THETA_WORLD      #Spheroid position angle (CCW/world-x)                     [deg]
+SPHEROID_THETAERR_WORLD   #RMS error on spheroid position angle                      [deg]
+SPHEROID_THETA_J2000      #Spheroid position angle (east of north, J2000)            [deg]
+SPHEROID_SERSICN          #Spheroid Sersic index from fitting                       
+SPHEROID_SERSICNERR       #RMS error on fitted spheroid Sersic index                
+FLUX_DISK                 #Disk total flux from fitting                              [count]
+FLUXERR_DISK              #RMS error on fitted disk total flux                       [count]
+#MAG_DISK                  #Disk total magnitude from fitting                         [mag]
+#MAGERR_DISK               #RMS error on fitted disk total magnitude                  [mag]
+FLUX_MAX_DISK             #Peak disk flux above background                           [count]
+FLUX_EFF_DISK             #Effective disk flux above background                      [count]
+FLUX_MEAN_DISK            #Mean effective disk flux above background                 [count]
+#MU_MAX_DISK               #Peak disk surface brightness above background             [mag * arcsec**(-2)]
+#MU_EFF_DISK               #Effective disk surface brightness above background        [mag * arcsec**(-2)]
+#MU_MEAN_DISK              #Mean effective disk surface brightness above background   [mag * arcsec**(-2)]
+FLUXRATIO_DISK            #Disk flux-to-total ratio from fitting                    
+FLUXRATIOERR_DISK         #RMS error on disk flux-to-total ratio                    
+DISK_SCALE_IMAGE          #Disk scalelength from fitting                             [pixel]
+DISK_SCALEERR_IMAGE       #RMS error on fitted disk scalelength                      [pixel]
+DISK_SCALE_WORLD          #Disk scalelength from fitting (world coords)              [deg]
+DISK_SCALEERR_WORLD       #RMS error on fitted disk scalelength (world coords)       [deg]
+DISK_ASPECT_IMAGE         #Disk aspect ratio from fitting                           
+DISK_ASPECTERR_IMAGE      #RMS error on fitted disk aspect ratio                    
+DISK_ASPECT_WORLD         #Disk aspect ratio from fitting                           
+DISK_ASPECTERR_WORLD      #RMS error on disk aspect ratio                           
+DISK_INCLINATION          #Disk inclination from fitting                             [deg]
+DISK_INCLINATIONERR       #RMS error on disk inclination from fitting                [deg]
+DISK_THETA_IMAGE          #Disk position angle (CCW/x) from fitting                  [deg]
+DISK_THETAERR_IMAGE       #RMS error on fitted disk position angle                   [deg]
+DISK_THETA_WORLD          #Disk position angle (CCW/world-x)                         [deg]
+DISK_THETAERR_WORLD       #RMS error on disk position angle                          [deg]
+DISK_THETA_J2000          #Disk position angle (east of north, J2000)                [deg]
+#CHI2_DETMODEL            #Reduced Chi2 of the det. model fit to measurement image  
+#FLAGS_DETMODEL           #Detection model-fitting flags                            
+#NITER_DETMODEL           #Number of iterations for detection model-fitting         
+#FLUX_DETMODEL            #Flux from detection model-fitting                         [count]
+#FLUXERR_DETMODEL         #RMS error on detection model-fitting flux                 [count]
+#MAG_DETMODEL             #Magnitude from detection model-fitting                    [mag]
+#MAGERR_DETMODEL          #RMS error on detection model-fitting magnitude            [mag]
