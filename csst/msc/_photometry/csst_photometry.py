@@ -31,7 +31,7 @@ from scipy.interpolate import UnivariateSpline
 
 # import ..magfluxconvert as magf
 from .magfluxconvert import asinhpogson, fluxerr2magerr, magerr2fluxerr
-import stats
+from .stats import sigmaclip_limitsig, weighted_mean
 # import system
 from shutil import which
 
@@ -524,14 +524,14 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
     else:
         print('isolated stars: ', mask.sum())
         magdiff = -np.transpose(apermag[mask, :].transpose() - apmag8[mask])
-        diff_masked = stats.sigmaclip_limitsig(magdiff, sigma=sigma, maxiters=iters, axis=0)
+        diff_masked = sigmaclip_limitsig(magdiff, sigma=sigma, maxiters=iters, axis=0)
         mask1 = mask
         mask = np.logical_not(np.any(diff_masked.mask, axis=1))
         nstar_aper = mask.sum()
         diff_masked = diff_masked[mask]
         for i in range(naper):
             weighterr = np.sqrt(apmag8err[mask1][mask] ** 2 + apermagerr[:, i][mask1][mask] ** 2)
-            cor, _, corerr = stats.weighted_mean(diff_masked[:, i], weighterr, weight_square=False)
+            cor, _, corerr = weighted_mean(diff_masked[:, i], weighterr, weight_square=False)
             corerr /= np.sqrt(nstar_aper)
             apercor[i] = cor
             apercor_std[i] = corerr
@@ -657,12 +657,12 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
             else:
                 print('isolated stars for ' + magkeys[i] + ':', mask.sum())
                 magdiff = apmag8[mask] - kmag[mask]
-                diff_masked = stats.sigmaclip_limitsig(magdiff, sigma=sigma, maxiters=iters, sig_limit=sig_limit)
+                diff_masked = sigmaclip_limitsig(magdiff, sigma=sigma, maxiters=iters, sig_limit=sig_limit)
                 mask1 = np.logical_not(diff_masked.mask)
                 nstar_cor = mask1.sum()
                 diff_masked = magdiff[mask1]
                 weighterr = np.sqrt(kmagerr[mask][mask1] ** 2 + apmag8err[mask][mask1] ** 2)
-                cor, _, corerr = stats.weighted_mean(diff_masked, weighterr, weight_square=False)
+                cor, _, corerr = weighted_mean(diff_masked, weighterr, weight_square=False)
                 corerr /= np.sqrt(nstar_cor)
                 print('correction using stars:', nstar_cor)
                 print([cor, corerr])
