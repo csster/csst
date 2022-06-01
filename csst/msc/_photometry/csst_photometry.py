@@ -32,7 +32,8 @@ from scipy.interpolate import UnivariateSpline
 # import ..magfluxconvert as magf
 from .magfluxconvert import asinhpogson, fluxerr2magerr, magerr2fluxerr
 import stats
-import system
+# import system
+from shutil import which
 
 prog_dir = sys.path[0]
 config_path = os.path.join(prog_dir, 'config/')
@@ -268,7 +269,8 @@ def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm
         **kwd: keywords for PICK_PSFSTARS
     """
 
-    if not system.cmd_exists('sex') or not system.cmd_exists('psfex'):
+    # if not system.cmd_exists('sex') or not system.cmd_exists('psfex'):
+    if which("sex") is None or which("psfex") is None:
         raise OSError('No sex or psfex SHELL command found! Please install')
 
     rootname, _ = os.path.splitext(fitsfile)
