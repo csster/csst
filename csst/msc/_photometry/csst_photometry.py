@@ -29,7 +29,8 @@ from astropy.io import fits
 from astropy.table import Table
 from scipy.interpolate import UnivariateSpline
 
-import magfluxconvert as magf
+# import ..magfluxconvert as magf
+from .magfluxconvert import asinhpogson, fluxerr2magerr, magerr2fluxerr
 import stats
 import system
 
@@ -480,7 +481,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
     flux = fluxcalib['FLUX_AUTO']
     fluxerr = fluxcalib['FLUXERR_AUTO']
     radius = fluxcalib['FLUX_RADIUS']
-    automag, automagerr = magf.fluxerr2magerr(flux, fluxerr)
+    automag, automagerr = fluxerr2magerr(flux, fluxerr)
     tmpmask = (automagerr < low_errlim) & (automagerr > 0)
     automagerr[tmpmask] = low_errlim
     mask_auto = (fluxcalib['FLAGS'] == 0) & (elp < elp_lim) & (automagerr < magerr_lim) & (automagerr > 0) & (
@@ -498,7 +499,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
 
     flux = fluxcalib['FLUX_APER']
     fluxerr = fluxcalib['FLUXERR_APER']
-    apermag, apermagerr = magf.fluxerr2magerr(flux, fluxerr)
+    apermag, apermagerr = fluxerr2magerr(flux, fluxerr)
     apmag8 = apermag[:, indref]
     apmag8err = apermagerr[:, indref]
     tmpmask = (apmag8err > 0) & (apmag8err < low_errlim)
@@ -561,7 +562,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
             10.0) ** 2 / 2.5 ** 2 * ce ** 2)
         fluxcor['FLUX_APER'][:, i] = ff1
         fluxcor['FLUXERR_APER'][:, i] = fe1
-        mag, magerr = magf.fluxerr2magerr(ff1, fe1)
+        mag, magerr = fluxerr2magerr(ff1, fe1)
         apermag[:, i] = mag
         apermagerr[:, i] = magerr
     mag_col = Table.Column(apermag, 'MAG_APER')
@@ -588,7 +589,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
         fe = fluxcor['FLUXERR_AUTO']
         ff1 = ff * 10.0 ** (-cf / 2.5)
         fluxcor['FLUX_AUTO'] = ff1
-        mag, magerr = magf.fluxerr2magerr(ff1, fe)
+        mag, magerr = fluxerr2magerr(ff1, fe)
         mag_col = Table.Column(mag, 'MAG_AUTO')
         magerr_col = Table.Column(magerr, 'MAGERR_AUTO')
         fluxcor.add_column(magerr_col, fluxcor.index_column('FLUXERR_AUTO') + 1)
@@ -634,7 +635,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
         else:
             fluxerr = np.zeros_like(flux)
         if i < 3:
-            kmag, kmagerr = magf.fluxerr2magerr(flux, fluxerr)
+            kmag, kmagerr = fluxerr2magerr(flux, fluxerr)
             tmpmask = (kmagerr < low_errlim) & (kmagerr > 0)
             kmagerr[tmpmask] = low_errlim
             mask = mask_auto & (kmag < 90.0) & (apmag8 > 0) & (apmag8 < 90.0) & (kmag > 0) & (kmagerr > 0) & (
@@ -672,7 +673,7 @@ def magnitude_correction(fluxcalib, head, plot_name=None, magerr_lim=0.05, elp_l
         fluxcor[fluxkeys[i]] = ff1
         if i < 5:
             fluxcor[fluxerrkeys[i]] = fe1
-        mag, magerr = magf.fluxerr2magerr(ff1, fe1)
+        mag, magerr = fluxerr2magerr(ff1, fe1)
         mag_col = Table.Column(mag, magkeys[i])
         if i < 5:
             magerr_col = Table.Column(magerr, magerrkeys[i])
@@ -760,7 +761,7 @@ def match_sdss(sexcat, sdsscat, outcat=None):
                 merrkey = itype + 'Mag7Err_' + ifilt
             flux = sdss[fkey]
             fluxerr = np.sqrt(1.0 / sdss[ferrkey])
-            mag, magerr = magf.fluxerr2magerr(flux, fluxerr)
+            mag, magerr = fluxerr2magerr(flux, fluxerr)
             sdss[fkey] = mag
             sdss[ferrkey] = magerr
             sdss.rename_column(fkey, mkey)
