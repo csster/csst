@@ -127,6 +127,9 @@ class CsstMscInstrumentProc(CsstProcessor):
                                                  verbose=False,
                                                  gain_apply=True)
 
+        print(self.__flg, type(self.__flg), self.__flg.dtype)
+        print(masked, type(masked), masked.dtype)
+
         self.__flg = self.__flg | (masked * 16)
         if self._switches['clean']:
             self.__img = cleaned
