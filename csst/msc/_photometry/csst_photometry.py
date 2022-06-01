@@ -35,8 +35,12 @@ import stats
 # import system
 from shutil import which
 
-prog_dir = sys.path[0]
-config_path = os.path.join(prog_dir, 'config/')
+# prog_dir = sys.path[0]
+# CONFIG_PATH = os.path.join(prog_dir, 'config/')
+
+from csst import PACKAGE_PATH
+CONFIG_PATH = PACKAGE_PATH + "/msc/phot_config/"
+
 __version__ = "1.2.3"
 
 
@@ -151,11 +155,11 @@ def closest_match(coord1, coord2, min_dist=1.0):
 #     if not system.cmd_exists('sex') or not system.cmd_exists('psfex'):
 #         raise OSError('No sex or psfex SHELL command found! Please install')
 #
-#     sexfile = os.path.join(config_path, 'csst_psfex.sex')
-#     covfile = os.path.join(config_path, 'gauss_4.0_7x7.conv')
-#     nnwfile = os.path.join(config_path, 'default.nnw')
-#     parfile = os.path.join(config_path, 'csst_psfex.param')
-#     pexfile = os.path.join(config_path, 'csst.psfex')
+#     sexfile = os.path.join(CONFIG_PATH, 'csst_psfex.sex')
+#     covfile = os.path.join(CONFIG_PATH, 'gauss_4.0_7x7.conv')
+#     nnwfile = os.path.join(CONFIG_PATH, 'default.nnw')
+#     parfile = os.path.join(CONFIG_PATH, 'csst_psfex.param')
+#     pexfile = os.path.join(CONFIG_PATH, 'csst.psfex')
 #     psffile = fitsname + '_psf.fits'
 #
 #     # head=fits.getheader(fitsfile)
@@ -286,11 +290,11 @@ def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm
         _, filename = os.path.split(rootname[:indpos])
         fitsname = os.path.join(outdir, filename)
 
-    sexfile = os.path.join(config_path, 'csst_psfex.sex')
-    covfile = os.path.join(config_path, filter_name)
-    nnwfile = os.path.join(config_path, 'default.nnw')
-    parfile = os.path.join(config_path, 'csst_psfex.param')
-    pexfile = os.path.join(config_path, 'csst.psfex')
+    sexfile = os.path.join(CONFIG_PATH, 'csst_psfex.sex')
+    covfile = os.path.join(CONFIG_PATH, filter_name)
+    nnwfile = os.path.join(CONFIG_PATH, 'default.nnw')
+    parfile = os.path.join(CONFIG_PATH, 'csst_psfex.param')
+    pexfile = os.path.join(CONFIG_PATH, 'csst.psfex')
     psffile = fitsname + '_psf.fits'
 
     command = 'sex ' + fitsfile + ' -c ' + sexfile + ' -CATALOG_NAME ' + psffile + ' -PARAMETERS_NAME ' + parfile + ' -DETECT_MINAREA ' + str(
@@ -361,13 +365,13 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
         _, rootname = os.path.split(fitsname)
         fitsname = os.path.join(outdir, rootname)
 
-    sexfile = os.path.join(config_path, 'csst_phot.sex')
-    covfile = os.path.join(config_path, 'default.conv')
-    nnwfile = os.path.join(config_path, 'default.nnw')
+    sexfile = os.path.join(CONFIG_PATH, 'csst_phot.sex')
+    covfile = os.path.join(CONFIG_PATH, 'default.conv')
+    nnwfile = os.path.join(CONFIG_PATH, 'default.nnw')
     if phot_type == "psf":
-        parfile = os.path.join(config_path, 'csst_psfphot.params')
+        parfile = os.path.join(CONFIG_PATH, 'csst_psfphot.params')
     else:
-        parfile = os.path.join(config_path, 'csst_modphot.params')
+        parfile = os.path.join(CONFIG_PATH, 'csst_modphot.params')
     psffile = fitsname + '_psf.fits'
     head = fits.getheader(fitsfile, 0)
     head1 = fits.getheader(fitsfile, 1)
