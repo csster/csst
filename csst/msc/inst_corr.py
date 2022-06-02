@@ -100,11 +100,11 @@ class CsstMscInstrumentProc(CsstProcessor):
             model = deepCR(clean_model, inpaint_model, device='CPU', hidden=50)
             if self.n_jobs > 1:
                 masked, cleaned = model.clean(
-                    self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=True,
+                    self.__img, threshold=0.5, inpaint=True, binary=True, segment=True, patch=256, parallel=True,
                     n_jobs=self.n_jobs)
             else:
                 masked, cleaned = model.clean(
-                    self.__img, threshold=0.5, inpaint=True, segment=True, patch=256, parallel=False,
+                    self.__img, threshold=0.5, inpaint=True, binary=True, segment=True, patch=256, parallel=False,
                     n_jobs=self.n_jobs)
         else:
             cleaned, masked = cosmicray_lacosmic(ccd=self.__img,
