@@ -97,7 +97,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         if self._switches['deepcr']:
             clean_model = DEEPCR_MODEL_PATH
             inpaint_model = 'ACS-WFC-F606W-2-32'
-            model = deepCR(clean_model, inpaint_model, device='CPU', hidden=50)
+            model = deepCR(clean_model, inpaint_model, device=self.device, hidden=50)
             if self.n_jobs > 1:
                 masked, cleaned = model.clean(
                     self.__img, threshold=0.5, inpaint=True, binary=True, segment=True, patch=256, parallel=True,
@@ -126,10 +126,7 @@ class CsstMscInstrumentProc(CsstProcessor):
                                                  psfbeta=4.765,
                                                  verbose=False,
                                                  gain_apply=True)
-
-        print(self.__flg, type(self.__flg), self.__flg.dtype)
-        print(masked, type(masked), masked.dtype)
-
+        masked = masked.astype(np.uint16)
         self.__flg = self.__flg | (masked * 16)
         if self._switches['clean']:
             self.__img = cleaned
@@ -151,9 +148,10 @@ class CsstMscInstrumentProc(CsstProcessor):
         weight[self.__flg > 0] = 0
         self.__wht = weight
 
-    def prepare(self, n_jobs=2, n_threads=1, **kwargs):
+    def prepare(self, n_jobs=2, n_threads=1, device='CPU', **kwargs):
         self.n_jobs = n_jobs
         self.set_num_threads(n_threads)
+        self.device = device
         for name in kwargs:
             self._switches[name] = kwargs[name]
 
