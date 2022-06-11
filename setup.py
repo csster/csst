@@ -31,6 +31,7 @@ setuptools.setup(
                   "csst": ["msc/deepcr_model/*",
                            "msc/pos_calib_config/*",
                            "msc/flux_calib_config/*",
+                           "msc/phot_config/*",
                            ]},
     # install_requires=['sphinx>=4.2.0',
     #                   'numpy>=1.22.0',
