@@ -6,6 +6,7 @@ from ccdproc import cosmicray_lacosmic
 from deepCR import deepCR
 from collections import OrderedDict
 
+from .backbone import VER_SIMS
 from ..core.processor import CsstProcessor, CsstProcStatus
 from ..msc import CsstMscImgData
 from .. import PACKAGE_PATH
@@ -155,7 +156,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         for name in kwargs:
             self._switches[name] = kwargs[name]
 
-    def run(self, raw: CsstMscImgData, bias: np.ndarray, dark: np.ndarray, flat: np.ndarray):
+    def run(self, raw: CsstMscImgData, bias: np.ndarray, dark: np.ndarray, flat: np.ndarray, ver_sim="C3"):
 
         assert isinstance(raw, CsstMscImgData)
         self.__img = np.copy(raw.data)
@@ -176,12 +177,21 @@ class CsstMscInstrumentProc(CsstProcessor):
 
         print('finish the run and save the results back to CsstData')
 
+        # explicitly specify dtype
         img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32))
         wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
         flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.uint16))
-        img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
-        wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0).replace("_raw", "_wht"), hdu=0)
-        flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0).replace("_raw", "_flg"), hdu=0)
+
+        # output names are determined via simulation version
+        assert ver_sim in VER_SIMS
+        if ver_sim == "C3":
+            img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0).replace("_raw", "_img"), hdu=0)
+            wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0).replace("_raw", "_wht"), hdu=0)
+            flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0).replace("_raw", "_flg"), hdu=0)
+        elif ver_sim == "C5.1":
+            img.set_keyword("FILENAME", img.get_keyword("FILENAME", hdu=0) + "_img", hdu=0)
+            wht.set_keyword("FILENAME", wht.get_keyword("FILENAME", hdu=0) + "_wht", hdu=0)
+            flg.set_keyword("FILENAME", flg.get_keyword("FILENAME", hdu=0) + "_flg", hdu=0)
 
         return img, wht, flg
 
