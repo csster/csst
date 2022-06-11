@@ -1,3 +1,4 @@
+import glob
 # from abc import ABC
 from collections import OrderedDict
 import astropy.io.fits as fits
@@ -43,14 +44,17 @@ class CsstMscImgData(CsstData):
 
     def get_flat(self, fp):
         """ get flat """
+        fp = glob.glob(fp)[0]
         return fits.getdata(fp)
 
     def get_bias(self, fp):
         """ get bias """
+        fp = glob.glob(fp)[0]
         return fits.getdata(fp)
 
     def get_dark(self, fp):
         """ get dark """
+        fp = glob.glob(fp)[0]
         return fits.getdata(fp)
 
     def get_l1data(self):
