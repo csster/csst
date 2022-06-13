@@ -30,11 +30,11 @@ CONFIG_PMO = dict(
     # test and working directory
     dir_raw="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
     dir_work="/home/user/L1Pipeline/msc/work/",
-    filename_fmt="{}/CSST_MSC_MS_CRS_*_{:02d}_L0_1.fits",
+    filename_fmt='{}/CSST_MSC_MS_SCI_*_{:02d}_L0_1.fits',
     # on PMO
-    path_aux="/home/user/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
+    path_aux="/data/sim_data/MSC_0000100/ref/MSC_{}_*_{:02d}_combine.fits",
     # gaia catalog directory (for position calibration)
-    dir_gaia_catalog="/home/csstpipeline/L1Pipeline/msc/gaia_dr3/",
+    dir_gaia_catalog="/home/user/L1Pipeline/msc/gaia_dr3/",
     # version of simulation data
     ver_sim="C5.1",
     # only 18 cores available in cloud machine from PMO
