@@ -65,44 +65,36 @@ class CsstMscNamingRules:
             self.available_ccd_ids.sort()
 
     @staticmethod
-    def glob_dir(dir_raw, ver_sim="C5"):
+    def glob_dir(dir_l0, ver_sim="C5"):
+        """ glob files in L0 data directory """
         if ver_sim == "C3":
-            pattern = os.path.join(dir_raw, "MSC_MS_*_raw.fits")
+            pattern = os.path.join(dir_l0, "MSC_MS_*_raw.fits")
         elif ver_sim == "C5.1":
-            pattern = os.path.join(dir_raw, "CSST_MSC_MS_SCI_*.fits")
+            pattern = os.path.join(dir_l0, "CSST_MSC_MS_SCI_*.fits")
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
         fps.sort()
         return fps
 
-    def pc_combined_image(self, ccd_id):
-        if self.ver_sim == "C3":
-            return ""
-
-    @property
-    def pc_scamp_coord(self):
-        """ SCAMP coord """
-        return "scamp_coord.txt"
-
-    def l1_final_output_image(self, ccd_id):
-        return
-
     def l0_cat(self, ccd_id=6):
+        """ the L0 cat file path"""
         if self.ver_sim == "C3":
-            fn = "MSC_{}_{:07d}_{:02d}.cat".format(
-                self._exp_start, self._exp_id-100000000, ccd_id)
+            fn = "{}_{}_{:07d}_{:02d}.cat".format(
+                self._instrument, self._exp_start, self._exp_id-100000000, ccd_id)
         elif self.ver_sim == "C5.1":
-            fn = "MSC_{}_chip_{:02d}_filt_{}.cat".format(
-                self._exp_id-90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
+            fn = "{}_{}_chip_{:02d}_filt_{}.cat".format(
+                self._instrument, self._exp_id-90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
         return os.path.join(self.dir_l0, fn)
 
     def l0_log(self, ccd_id=6):
+        """ L0 log file path """
         if self.ver_sim == "C5.1":
-            fn = "MSC_{}_chip_{:02d}_filt_{}.log".format(
-                self._exp_id - 90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
+            fn = "{}_{}_chip_{:02d}_filt_{}.log".format(
+                self._instrument, self._exp_id - 90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
             return os.path.join(self.dir_l0, fn)
 
     def l0_sci(self, ccd_id=6):
+        """ L0 image file path """
         if self.ver_sim == "C3":
             fn = "{}_{}_{}_{}_{:02d}_raw.fits".format(
                 self._instrument, self._survey, self._exp_start, self._exp_id, ccd_id)
@@ -113,6 +105,7 @@ class CsstMscNamingRules:
         return os.path.join(self.dir_l0, fn)
 
     def l0_crs(self, ccd_id=6):
+        """ L0 cosmic ray file path """
         if self.ver_sim == "C3":
             fn = "{}_CRS_{}_{}_{:02d}_raw.fits".format(
                 self._instrument, self._exp_start, self._exp_id, ccd_id)
@@ -122,26 +115,78 @@ class CsstMscNamingRules:
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id)
         return os.path.join(self.dir_l0, fn)
 
-    def l1_sci(self, ccd_id=6):
+    # def l1_sci(self, ccd_id=6):
+    #     if self.ver_sim == "C3":
+    #         fn = "{}_{}_{}_{:02d}_L1.fits".format(
+    #             self._instrument, self._survey, self._exp_start, self._exp_id, ccd_id)
+    #     elif self.ver_sim == "C5.1":
+    #         fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_L1.fits".format(
+    #             self._telescope, self._instrument, self._survey,
+    #             self._exp_start, self._exp_stop, self._exp_id, ccd_id)
+    #     return os.path.join(self.dir_l1, fn)
+
+    def l1_sci(self, ccd_id=6, suffix="img_whead", ext="fits"):
+        """ generate L1 file path
+
+        Parameters
+        ----------
+        ccd_id:
+            CCD ID
+        suffix:
+            {"img", "wht", "flg", "img_L1", "wht_L1", "flg_L1", "whead"}
+        ext:
+            {"fits", "acat", "rcat"}
+
+        Returns
+        -------
+        L1 file path
+
+
+        """
         if self.ver_sim == "C3":
-            fn = "{}_{}_{}_{:02d}_L1.fits".format(
-                self._instrument, self._survey, self._exp_start, self._exp_id, ccd_id)
+            fn = "{}_{}_{}_{:02d}_{}.{}".format(
+                self._instrument, self._survey,
+                self._exp_start, self._exp_id, ccd_id, suffix, ext)
         elif self.ver_sim == "C5.1":
-            fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_L1.fits".format(
+            fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_{}.{}".format(
                 self._telescope, self._instrument, self._survey,
-                self._exp_start, self._exp_stop, self._exp_id, ccd_id)
+                self._exp_start, self._exp_stop, self._exp_id, ccd_id, suffix, ext)
         return os.path.join(self.dir_l1, fn)
 
-    def l0_aux(self, ccd_id=6, suffix="img"):
-        if self.ver_sim == "C3":
-            fn = "{}_{}_{}_{:02d}_{}.fits".format(
-                self._instrument, self._survey,
-                self._exp_start, self._exp_id, ccd_id, suffix)
-        elif self.ver_sim == "C5.1":
-            fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_{}.fits".format(
-                self._telescope, self._instrument, self._survey,
-                self._exp_start, self._exp_stop, self._exp_id, ccd_id, suffix)
-        return os.path.join(self.dir_l0, fn)
+    @property
+    def pc_combined_image(self):
+        """ combined image """
+        return os.path.join(self.dir_l1, "combined_image.fits")
+
+    @property
+    def pc_combined_cat(self):
+        """ combined catalog """
+        return os.path.join(self.dir_l1, "combined_cat.fits")
+
+    @property
+    def pc_ref_cat(self):
+        """ reference catalog """
+        return os.path.join(self.dir_l1, "ref.cat")
+
+    @property
+    def pc_check_fits(self):
+        """ check fits """
+        return os.path.join(self.dir_l1, "check.fits")
+
+    @property
+    def pc_combined_head(self):
+        """ combined head """
+        return os.path.join(self.dir_l1, "combined_cat.head")
+
+    @property
+    def pc_combined_head_fits(self):
+        """ combined head (converted to) fits """
+        return os.path.join(self.dir_l1, "combined_cat.head.fits")
+
+    @property
+    def pc_scamp_coord(self):
+        """ SCAMP coord """
+        return os.path.join(self.dir_l1, "scamp_coord.txt")
 
 
 if __name__ == "__main__":
