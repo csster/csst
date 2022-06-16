@@ -108,8 +108,8 @@ def do_one_exposure(dir_raw="", dir_work="", filename_fmt="", path_aux="", dir_g
         fn_list.append(fp_img)
 
     # # parallel step 1
-    # def corr_one_img(i_ccd, dir_raw, dir_work):
-    #     fp_raw = glob.glob("{}/MSC_MS_*_{:02}_raw.fits".format(dir_raw, i_ccd))
+    # def corr_one_img(i_ccd, dir_l0, dir_l1):
+    #     fp_raw = glob.glob("{}/MSC_MS_*_{:02}_raw.fits".format(dir_l0, i_ccd))
     #     assert len(fp_raw) == 1
     #     fp_raw = fp_raw[0]
     #
@@ -129,17 +129,17 @@ def do_one_exposure(dir_raw="", dir_work="", filename_fmt="", path_aux="", dir_g
     #     fp_img = img[0].header["FILENAME"] + '.fits'
     #
     #     # save img, wht, flg to somewhere
-    #     img.writeto("{}/{}.fits".format(dir_work, img.get_keyword("FILENAME")), overwrite=True)
-    #     wht.writeto("{}/{}.fits".format(dir_work, wht.get_keyword("FILENAME")), overwrite=True)
-    #     flg.writeto("{}/{}.fits".format(dir_work, flg.get_keyword("FILENAME")), overwrite=True)
+    #     img.writeto("{}/{}.fits".format(dir_l1, img.get_keyword("FILENAME")), overwrite=True)
+    #     wht.writeto("{}/{}.fits".format(dir_l1, wht.get_keyword("FILENAME")), overwrite=True)
+    #     flg.writeto("{}/{}.fits".format(dir_l1, flg.get_keyword("FILENAME")), overwrite=True)
     #     # save header
-    #     img[1].header.tofile("{}/{}.head".format(dir_work, img.get_keyword("FILENAME").replace(".fits", "")),
+    #     img[1].header.tofile("{}/{}.head".format(dir_l1, img.get_keyword("FILENAME").replace(".fits", "")),
     #                          overwrite=True)
     #     return OrderedDict(img=img, wht=wht, flg=flg, fp_img=fp_img)
     #
     #
     # result = joblib.Parallel(n_jobs=NJOBS, verbose=5)(
-    #     joblib.delayed(corr_one_img)(i_ccd, dir_raw, dir_work) for i_ccd in CCD_ID_LIST)
+    #     joblib.delayed(corr_one_img)(i_ccd, dir_l0, dir_l1) for i_ccd in CCD_ID_LIST)
     # img_list = [_["img"] for _ in result]
     # wht_list = [_["wht"] for _ in result]
     # flg_list = [_["flg"] for _ in result]
@@ -150,12 +150,12 @@ def do_one_exposure(dir_raw="", dir_work="", filename_fmt="", path_aux="", dir_g
     pcProc.run(img_list, wht_list, flg_list, fn_list, dir_gaia_catalog, dir_work, 2.0)
     pcProc.cleanup(img_list, dir_work)
     # if img_list:
-    #     pcProc.run(img_list, wht_list, flg_list, fn_list, dir_gaia_catalog, dir_work, 2.0)
+    #     pcProc.run(img_list, wht_list, flg_list, fn_list, dir_gaia_catalog, dir_l1, 2.0)
     # else:
     #     for i_ccd in CCD_ID_LIST:
-    #         fp_img = "{}/MSC_MS_*_{:02}_img.fits".format(dir_work, i_ccd)
-    #         fp_wht = "{}/MSC_MS_*_{:02}_wht.fits".format(dir_work, i_ccd)
-    #         fp_flg = "{}/MSC_MS_*_{:02}_flg.fits".format(dir_work, i_ccd)
+    #         fp_img = "{}/MSC_MS_*_{:02}_img.fits".format(dir_l1, i_ccd)
+    #         fp_wht = "{}/MSC_MS_*_{:02}_wht.fits".format(dir_l1, i_ccd)
+    #         fp_flg = "{}/MSC_MS_*_{:02}_flg.fits".format(dir_l1, i_ccd)
     #         img = CsstMscImgData.read(fp_img)
     #         wht = CsstMscImgData.read(fp_wht)
     #         flg = CsstMscImgData.read(fp_flg)
@@ -163,7 +163,7 @@ def do_one_exposure(dir_raw="", dir_work="", filename_fmt="", path_aux="", dir_g
     #         wht_list.append(wht)
     #         flg_list.append(flg)
     #         fn_list.append(fp_img)
-    #     pcProc.run(img_list, wht_list, flg_list, fn_list, dir_gaia_catalog, dir_work, 2.0)
+    #     pcProc.run(img_list, wht_list, flg_list, fn_list, dir_gaia_catalog, dir_l1, 2.0)
 
     # Step 3. Calibrate Flux
     fcProc = CsstProcFluxCalibration()
