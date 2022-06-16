@@ -22,11 +22,12 @@ class CsstMscNamingRules:
 
     """
 
-    def __init__(self, ver_sim="C5.1", dir_l0="", dir_l1="", force_all_ccds=False):
+    def __init__(self, ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", force_all_ccds=False):
         assert ver_sim in VER_SIMS
 
         self.dir_l0 = dir_l0
         self.dir_l1 = dir_l1
+        self.dir_pcref = dir_pcref
         self.ver_sim = ver_sim
 
         print("globbing files ... ", end="")
