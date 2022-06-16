@@ -145,7 +145,7 @@ class CsstMscNamingRules:
 
 
 if __name__ == "__main__":
-    from csst.msc.naming
+    from csst.msc.naming import CsstMscNamingRules
     nr = CsstMscNamingRules(ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
     print(nr.l0_sci(ccd_id=6))
     print(os.path.exists(nr.l0_sci(ccd_id=6)))
@@ -159,6 +159,7 @@ if __name__ == "__main__":
     print(nr.available_ccd_ids)
     print(nr.l1_sci(25))
 
+    from csst.msc.naming import CsstMscNamingRules
     nr = CsstMscNamingRules(ver_sim="C5.1", dir_l0="/data/sim_data/MSC_0000100", dir_l1="/home/user/L1Pipeline/msc/work")
     print(nr.l0_sci(ccd_id=6))
     print(os.path.exists(nr.l0_sci(ccd_id=6)))
