@@ -32,13 +32,12 @@ class CsstMscDataManager:
         self.path_aux = path_aux
         self.ver_sim = ver_sim
 
-        print("globbing files ... ", end="")
+        print("@DM: globbing files ... ", end="")
         fps = self.glob_dir(dir_l0, ver_sim=ver_sim)
         if force_all_ccds:
             assert len(fps) == len(CCD_ID_LIST)
         else:
             assert len(fps) > 0
-        print("{} L0 images found!".format(len(fps)))
 
         if ver_sim == "C3":
             # get info
@@ -77,6 +76,9 @@ class CsstMscDataManager:
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
         fps.sort()
+
+        if len(fps) == 0:
+            print("@DM.glob_dir: {} files found with pattern: {}".format(len(fps), pattern))
         return fps
 
     def l0_cat(self, ccd_id=6):
