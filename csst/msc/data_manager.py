@@ -156,7 +156,7 @@ class CsstMscDataManager:
 
         """
         if self.ver_sim == "C3":
-            fn = "{}_{}_{}_{:02d}_{}.{}".format(
+            fn = "{}_{}_{}_{}_{:02d}_{}.{}".format(
                 self._instrument, self._survey,
                 self._exp_start, self._exp_id, ccd_id, suffix, ext)
         elif self.ver_sim == "C5.1":
@@ -234,32 +234,36 @@ if __name__ == "__main__":
     # test C3
     import os
     from csst.msc.data_manager import CsstMscDataManager
-    nr = CsstMscDataManager(
+    dm = CsstMscDataManager(
         ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
-    print(nr.l0_sci(ccd_id=6))
-    print(os.path.exists(nr.l0_sci(ccd_id=6)))
-    print(nr.l0_crs(ccd_id=6))
-    print(os.path.exists(nr.l0_sci(ccd_id=8)))
-    print(nr.l0_cat(8))
-    print(os.path.exists(nr.l0_cat(ccd_id=8)))
-    print(nr.available_ccd_ids)
-    print(nr.l1_sci(25, "img", "fits"))
+    print("----- L0 images -----")
+    print(dm.l0_sci(ccd_id=6))
+    print(os.path.exists(dm.l0_sci(ccd_id=6)))
+    print("----- L0 crs -----")
+    print(dm.l0_crs(ccd_id=6))
+    print(os.path.exists(dm.l0_sci(ccd_id=8)))
+    print("----- L0 input cat -----")
+    print(dm.l0_cat(8))
+    print(os.path.exists(dm.l0_cat(ccd_id=8)))
+    print("----- available ccd_ids -----")
+    print(dm.available_ccd_ids)
+    print("----- L1 images -----")
+    print(dm.l1_sci(25, "img", "fits"))
 
     # test C5.1
     import os
     from csst.msc.data_manager import CsstMscDataManager
     from csst.msc.backbone import CCD_ID_LIST
-    nr = CsstMscDataManager(ver_sim="C5.1",
-                            dir_l0="/data/sim_data/MSC_0000100",
-                            dir_l1="/home/user/L1Pipeline/msc/work")
-    print(nr.available_ccd_ids)
-    for ccd_id in nr.available_ccd_ids:
-        print(nr.l0_sci(ccd_id=ccd_id))
-        print(os.path.exists(nr.l0_sci(ccd_id=ccd_id)))
-        print(nr.l0_crs(ccd_id=ccd_id))
-        print(os.path.exists(nr.l0_sci(ccd_id=ccd_id)))
-        print(nr.l0_cat(ccd_id=ccd_id))
-        print(os.path.exists(nr.l0_cat(ccd_id=ccd_id)))
-        print(nr.l0_log(ccd_id=ccd_id))
-        print(os.path.exists(nr.l0_log(ccd_id=ccd_id)))
-        print(nr.l1_sci(ccd_id, "img", "fits"))
+    dm = CsstMscDataManager(
+        ver_sim="C5.1", dir_l0="/data/sim_data/MSC_0000100", dir_l1="/home/user/L1Pipeline/msc/work")
+    print(dm.available_ccd_ids)
+    for ccd_id in dm.available_ccd_ids:
+        print(dm.l0_sci(ccd_id=ccd_id))
+        print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print(dm.l0_crs(ccd_id=ccd_id))
+        print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print(dm.l0_cat(ccd_id=ccd_id))
+        print(os.path.exists(dm.l0_cat(ccd_id=ccd_id)))
+        print(dm.l0_log(ccd_id=ccd_id))
+        print(os.path.exists(dm.l0_log(ccd_id=ccd_id)))
+        print(dm.l1_sci(ccd_id, "img", "fits"))
