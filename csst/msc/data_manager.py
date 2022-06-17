@@ -33,24 +33,27 @@ class CsstMscDataManager:
         self.ver_sim = ver_sim
 
         print("@DM: globbing files ... ", end="")
-        fps = self.glob_dir(dir_l0, ver_sim=ver_sim)
+        fps_img = self.glob_image(dir_l0, ver_sim=ver_sim)
+        fps_cat = self.glob_cat(dir_l0, ver_sim=ver_sim)
+
         if force_all_ccds:
-            assert len(fps) == len(CCD_ID_LIST)
+            assert len(fps_img) == len(CCD_ID_LIST)
         else:
-            assert len(fps) > 0
+            assert len(fps_img) > 0
 
         if ver_sim == "C3":
             # get info
             # print(re.split(r"[_.]", fps[0]))
             self._instrument, self._survey, \
                 self._exp_start, self._exp_id, \
-                _ccd_id, self._l0_suffix, _ext = re.split(r"[_.]", fps[0])
+                _ccd_id, self._l0_suffix, _ext = re.split(r"[_.]", fps_img[0])
+            self._cat_id = re.split(r"[_.]", fps_img[0])[1]
 
             self._exp_start = int(self._exp_start)
             self._exp_id = int(self._exp_id)
 
             # available CCD IDs
-            self.available_ccd_ids = [int(re.split(r"[_.]", fp)[4]) for fp in fps]
+            self.available_ccd_ids = [int(re.split(r"[_.]", fp)[4]) for fp in fps_img]
             self.available_ccd_ids.sort()
 
         elif ver_sim == "C5.1":
@@ -58,16 +61,19 @@ class CsstMscDataManager:
             # print(re.split(r"[_.]", fps[0]))
             self._telescope, self._instrument, self._survey, self._imagetype, \
                 self._exp_start, self._exp_stop, self._exp_id, \
-                _ccd_id, self._l0_suffix, self._version, _ext = re.split(r"[_.]", fps[0])
+                _ccd_id, self._l0_suffix, self._version, _ext = re.split(r"[_.]", fps_img[0])
+            self._cat_id = re.split(r"[_.]", fps_img[0])[1]
+
             self._exp_start = int(self._exp_start)
             self._exp_stop = int(self._exp_stop)
             self._exp_id = int(self._exp_id)
+
             # available CCD IDs
-            self.available_ccd_ids = [int(re.split(r"[_.]", fp)[7]) for fp in fps]
+            self.available_ccd_ids = [int(re.split(r"[_.]", fp)[7]) for fp in fps_img]
             self.available_ccd_ids.sort()
 
     @staticmethod
-    def glob_dir(dir_l0, ver_sim="C5"):
+    def glob_image(dir_l0, ver_sim="C5"):
         """ glob files in L0 data directory """
         if ver_sim == "C3":
             pattern = os.path.join(dir_l0, "MSC_MS_*_raw.fits")
@@ -77,15 +83,28 @@ class CsstMscDataManager:
         fps = [os.path.basename(fp) for fp in fps]
         fps.sort()
 
-        if len(fps) == 0:
-            print("@DM.glob_dir: {} files found with pattern: {}".format(len(fps), pattern))
+        print("@DM.glob_dir: {} files found with pattern: {}".format(len(fps), pattern))
+        return fps
+
+    @staticmethod
+    def glob_cat(dir_l0, ver_sim="C5"):
+        """ glob input catalogs in L0 data directory """
+        if ver_sim == "C3":
+            pattern = os.path.join(dir_l0, "MSC_*.cat")
+        elif ver_sim == "C5.1":
+            pattern = os.path.join(dir_l0, "MSC_*.cat")
+        fps = glob.glob(pattern)
+        fps = [os.path.basename(fp) for fp in fps]
+        fps.sort()
+
+        print("@DM.glob_dir: {} files found with pattern: {}".format(len(fps), pattern))
         return fps
 
     def l0_cat(self, ccd_id=6):
         """ the L0 cat file path"""
         if self.ver_sim == "C3":
             fn = "{}_{}_{:07d}_{:02d}.cat".format(
-                self._instrument, self._exp_start, self._exp_id-100000000, ccd_id)
+                self._instrument, self._cat_id, self._exp_id-100000000, ccd_id)
         elif self.ver_sim == "C5.1":
             fn = "{}_{}_chip_{:02d}_filt_{}.cat".format(
                 self._instrument, self._exp_id-90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
