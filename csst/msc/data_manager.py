@@ -32,7 +32,6 @@ class CsstMscDataManager:
         self.path_aux = path_aux
         self.ver_sim = ver_sim
 
-        print("@DM: globbing files ... ", end="")
         fps_img = self.glob_image(dir_l0, ver_sim=ver_sim)
         fps_cat = self.glob_cat(dir_l0, ver_sim=ver_sim)
 
@@ -47,7 +46,7 @@ class CsstMscDataManager:
             self._instrument, self._survey, \
                 self._exp_start, self._exp_id, \
                 _ccd_id, self._l0_suffix, _ext = re.split(r"[_.]", fps_img[0])
-            self._cat_id = re.split(r"[_.]", fps_img[0])[1]
+            self._cat_id = re.split(r"[_.]", fps_cat[0])[1]
 
             self._exp_start = int(self._exp_start)
             self._exp_id = int(self._exp_id)
@@ -62,7 +61,7 @@ class CsstMscDataManager:
             self._telescope, self._instrument, self._survey, self._imagetype, \
                 self._exp_start, self._exp_stop, self._exp_id, \
                 _ccd_id, self._l0_suffix, self._version, _ext = re.split(r"[_.]", fps_img[0])
-            self._cat_id = re.split(r"[_.]", fps_img[0])[1]
+            self._cat_id = re.split(r"[_.]", fps_cat[0])[1]
 
             self._exp_start = int(self._exp_start)
             self._exp_stop = int(self._exp_stop)
