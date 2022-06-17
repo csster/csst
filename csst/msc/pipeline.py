@@ -17,7 +17,7 @@ CONFIG_DANDELION = dict(
     # on Dandelion
     path_aux="/home/csstpipeline/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
     # gaia catalog directory (for position calibration)
-    dir_gaia_catalog="/home/csstpipeline/L1Pipeline/msc/gaia_dr3/",
+    dir_pcref="/home/csstpipeline/L1Pipeline/msc/gaia_dr3/",
     # version of simulation data
     ver_sim="C3",
     # only 18 cores available in cloud machine from PMO
