@@ -128,7 +128,7 @@ class CsstMscDataManager:
         suffix:
             {"img", "wht", "flg", "img_L1", "wht_L1", "flg_L1", "whead"}
         ext:
-            {"fits", "acat", "rcat"}
+            {"fits", "cat", "rcat"}
 
         Returns
         -------
@@ -146,14 +146,16 @@ class CsstMscDataManager:
         return os.path.join(self.dir_l1, fn)
 
     @property
-    def pc_combined_image(self):
-        """ combined image """
-        return os.path.join(self.dir_l1, "combined_image.fits")
+    def pc_combined_image(self, suffix="img", ext="fits"):
+        """ combined image
+        suffix:
+            {"img","wht","flg","cat"}
+        ext:
+            {"fits"}
+        """
+        fn = "combined_" + "{}.{}".format(suffix,ext)
+        return os.path.join(self.dir_l1, fn)
 
-    @property
-    def pc_combined_cat(self):
-        """ combined catalog """
-        return os.path.join(self.dir_l1, "combined_cat.fits")
 
     @property
     def pc_ref_cat(self):
@@ -196,13 +198,16 @@ class CsstMscDataManager:
         return ccd_ids
 
     def get_bias(self, ccd_id=6):
-        return fits.getdata(self.path_aux.format("CLB", ccd_id))
+        fp = glob.glob(self.path_aux.format("CLB", ccd_id))[0]
+        return fits.getdata(fp)
 
     def get_dark(self, ccd_id=6):
-        return fits.getdata(self.path_aux.format("CLD", ccd_id))
+        fp = glob.glob(self.path_aux.format("CLD", ccd_id))[0]
+        return fits.getdata(fp)
 
     def get_flat(self, ccd_id=6):
-        return fits.getdata(self.path_aux.format("CLF", ccd_id))
+        fp = glob.glob(self.path_aux.format("CLF", ccd_id))[0]
+        return fits.getdata(fp)
 
 
 if __name__ == "__main__":
