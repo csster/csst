@@ -165,7 +165,6 @@ class CsstMscDataManager:
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id, suffix, ext)
         return os.path.join(self.dir_l1, fn)
 
-    @property
     def pc_combined_image(self, suffix="img", ext="fits"):
         """ combined image
         suffix:
@@ -175,7 +174,6 @@ class CsstMscDataManager:
         """
         fn = "combined_" + "{}.{}".format(suffix,ext)
         return os.path.join(self.dir_l1, fn)
-
 
     @property
     def pc_ref_cat(self):
