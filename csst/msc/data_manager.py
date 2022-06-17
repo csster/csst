@@ -2,11 +2,12 @@ import glob
 import os
 import re
 import logging
+from astropy.io import fits
 
 from .backbone import VER_SIMS, CCD_ID_LIST, CCD_FILTER_MAPPING
 
 
-class CsstMscNamingRules:
+class CsstMscDataManager:
     """ this class defines the file format of the input & output of CSST MSC L1 pipeline
 
     C3:
@@ -22,12 +23,13 @@ class CsstMscNamingRules:
 
     """
 
-    def __init__(self, ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", force_all_ccds=False):
+    def __init__(self, ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux="", force_all_ccds=False):
         assert ver_sim in VER_SIMS
 
         self.dir_l0 = dir_l0
         self.dir_l1 = dir_l1
         self.dir_pcref = dir_pcref
+        self.path_aux = path_aux
         self.ver_sim = ver_sim
 
         print("globbing files ... ", end="")
@@ -54,7 +56,7 @@ class CsstMscNamingRules:
 
         elif ver_sim == "C5.1":
             # get info
-            print(re.split(r"[_.]", fps[0]))
+            # print(re.split(r"[_.]", fps[0]))
             self._telescope, self._instrument, self._survey, self._imagetype, \
                 self._exp_start, self._exp_stop, self._exp_id, \
                 _ccd_id, self._l0_suffix, self._version, _ext = re.split(r"[_.]", fps[0])
@@ -116,16 +118,6 @@ class CsstMscNamingRules:
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id)
         return os.path.join(self.dir_l0, fn)
 
-    # def l1_sci(self, ccd_id=6):
-    #     if self.ver_sim == "C3":
-    #         fn = "{}_{}_{}_{:02d}_L1.fits".format(
-    #             self._instrument, self._survey, self._exp_start, self._exp_id, ccd_id)
-    #     elif self.ver_sim == "C5.1":
-    #         fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_L1.fits".format(
-    #             self._telescope, self._instrument, self._survey,
-    #             self._exp_start, self._exp_stop, self._exp_id, ccd_id)
-    #     return os.path.join(self.dir_l1, fn)
-
     def l1_sci(self, ccd_id=6, suffix="img_whead", ext="fits"):
         """ generate L1 file path
 
@@ -141,7 +133,6 @@ class CsstMscNamingRules:
         Returns
         -------
         L1 file path
-
 
         """
         if self.ver_sim == "C3":
@@ -189,32 +180,61 @@ class CsstMscNamingRules:
         """ SCAMP coord """
         return os.path.join(self.dir_l1, "scamp_coord.txt")
 
+    def get_ccd_ids(self, ccd_ids=None):
+        """  """
+        if ccd_ids is None:
+            # default ccd_ids
+            ccd_ids = self.available_ccd_ids
+        else:
+            try:
+                # assert ccd_ids is a subset of available ccd_ids
+                assert set(ccd_ids).issubset(set(self.available_ccd_ids))
+            except AssertionError as ae:
+                print("@DM: available CCD IDs are ", self.available_ccd_ids)
+                print("@DM: target CCD IDs are ", ccd_ids)
+                raise ae
+        return ccd_ids
+
+    def get_bias(self, ccd_id=6):
+        return fits.getdata(self.path_aux.format("CLB", ccd_id))
+
+    def get_dark(self, ccd_id=6):
+        return fits.getdata(self.path_aux.format("CLD", ccd_id))
+
+    def get_flat(self, ccd_id=6):
+        return fits.getdata(self.path_aux.format("CLF", ccd_id))
+
 
 if __name__ == "__main__":
-    from csst.msc.naming import CsstMscNamingRules
-    nr = CsstMscNamingRules(ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
+    # test C3
+    import os
+    from csst.msc.data_manager import CsstMscDataManager
+    nr = CsstMscDataManager(
+        ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
     print(nr.l0_sci(ccd_id=6))
     print(os.path.exists(nr.l0_sci(ccd_id=6)))
     print(nr.l0_crs(ccd_id=6))
     print(os.path.exists(nr.l0_sci(ccd_id=8)))
     print(nr.l0_cat(8))
     print(os.path.exists(nr.l0_cat(ccd_id=8)))
-    print(nr.l0_log(8))
-    print(os.path.exists(nr.l0_log(ccd_id=8)))
-    print(nr.l0_aux(8, "img"))
     print(nr.available_ccd_ids)
-    print(nr.l1_sci(25))
+    print(nr.l1_sci(25, "img", "fits"))
 
-    from csst.msc.naming import CsstMscNamingRules
-    nr = CsstMscNamingRules(ver_sim="C5.1", dir_l0="/data/sim_data/MSC_0000100", dir_l1="/home/user/L1Pipeline/msc/work")
-    print(nr.l0_sci(ccd_id=6))
-    print(os.path.exists(nr.l0_sci(ccd_id=6)))
-    print(nr.l0_crs(ccd_id=6))
-    print(os.path.exists(nr.l0_sci(ccd_id=8)))
-    print(nr.l0_cat(8))
-    print(os.path.exists(nr.l0_cat(ccd_id=8)))
-    print(nr.l0_log(8))
-    print(os.path.exists(nr.l0_log(ccd_id=8)))
-    print(nr.l0_aux(8, "img"))
+    # test C5.1
+    import os
+    from csst.msc.data_manager import CsstMscDataManager
+    from csst.msc.backbone import CCD_ID_LIST
+    nr = CsstMscDataManager(ver_sim="C5.1",
+                            dir_l0="/data/sim_data/MSC_0000100",
+                            dir_l1="/home/user/L1Pipeline/msc/work")
     print(nr.available_ccd_ids)
-    print(nr.l1_sci(25))
+    for ccd_id in nr.available_ccd_ids:
+        print(nr.l0_sci(ccd_id=ccd_id))
+        print(os.path.exists(nr.l0_sci(ccd_id=ccd_id)))
+        print(nr.l0_crs(ccd_id=ccd_id))
+        print(os.path.exists(nr.l0_sci(ccd_id=ccd_id)))
+        print(nr.l0_cat(ccd_id=ccd_id))
+        print(os.path.exists(nr.l0_cat(ccd_id=ccd_id)))
+        print(nr.l0_log(ccd_id=ccd_id))
+        print(os.path.exists(nr.l0_log(ccd_id=ccd_id)))
+        print(nr.l1_sci(ccd_id, "img", "fits"))
