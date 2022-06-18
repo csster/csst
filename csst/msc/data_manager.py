@@ -1,10 +1,9 @@
 import glob
-import os
 import re
-import logging
+
 from astropy.io import fits
 
-from .backbone import VER_SIMS, CCD_ID_LIST, CCD_FILTER_MAPPING
+from .backbone import VER_SIMS, CCD_FILTER_MAPPING
 
 
 class CsstMscDataManager:
@@ -103,10 +102,10 @@ class CsstMscDataManager:
         """ the L0 cat file path"""
         if self.ver_sim == "C3":
             fn = "{}_{}_{:07d}_{:02d}.cat".format(
-                self._instrument, self._cat_id, self._exp_id-100000000, ccd_id)
+                self._instrument, self._cat_id, self._exp_id - 100000000, ccd_id)
         elif self.ver_sim == "C5.1":
             fn = "{}_{}_chip_{:02d}_filt_{}.cat".format(
-                self._instrument, self._exp_id-90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
+                self._instrument, self._exp_id - 90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
         return os.path.join(self.dir_l0, fn)
 
     def l0_log(self, ccd_id=6):
@@ -166,13 +165,21 @@ class CsstMscDataManager:
         return os.path.join(self.dir_l1, fn)
 
     def pc_combined_image(self, suffix="img", ext="fits"):
-        """ combined image
+        """ combined images
+
+        Parameters
+        ----------
         suffix:
-            {"img","wht","flg","cat"}
+            {"img", "wht", "flg", "cat"}
         ext:
-            {"fits"}
+            {"fits", }
+
+        Returns
+        -------
+        combined image path
+
         """
-        fn = "combined_" + "{}.{}".format(suffix,ext)
+        fn = "combined_" + "{}.{}".format(suffix, ext)
         return os.path.join(self.dir_l1, fn)
 
     @property
@@ -232,6 +239,7 @@ if __name__ == "__main__":
     # test C3
     import os
     from csst.msc.data_manager import CsstMscDataManager
+
     dm = CsstMscDataManager(
         ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
     print("----- L0 images -----")
@@ -252,16 +260,23 @@ if __name__ == "__main__":
     import os
     from csst.msc.data_manager import CsstMscDataManager
     from csst.msc.backbone import CCD_ID_LIST
+
     dm = CsstMscDataManager(
         ver_sim="C5.1", dir_l0="/data/sim_data/MSC_0000100", dir_l1="/home/user/L1Pipeline/msc/work")
+    print("----- available ccd_ids -----")
     print(dm.available_ccd_ids)
-    for ccd_id in dm.available_ccd_ids:
+    for ccd_id in dm.available_ccd_ids[:2]:
+        print("----- L0 images -----")
         print(dm.l0_sci(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print("----- L0 crs -----")
         print(dm.l0_crs(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print("----- L0 input cat -----")
         print(dm.l0_cat(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_cat(ccd_id=ccd_id)))
+        print("----- L0 input log -----")
         print(dm.l0_log(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_log(ccd_id=ccd_id)))
+        print("----- L1 images -----")
         print(dm.l1_sci(ccd_id, "img", "fits"))
