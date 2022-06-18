@@ -3,6 +3,9 @@ Contributors
 
 The contributors  to `csst` packages
 
-* Chao Liu (NAOC)
 * Bo Zhang (NAOC)
 * Zhou Xie (Guangzhou University)
+* Jundan Nie (NAOC)
+* Zhimin Zhou (NAOC)
+* Hu Zou (NAOC)
+* Chao Liu (NAOC)

@@ -77,6 +77,6 @@ In `setup.py`:
 
 Notes
 -----
-
+* Use `PEP8 <https://peps.python.org/pep-0008/>`_ style.
 * DO NOT use `try-except` excessively, particularly in low level code.
 
