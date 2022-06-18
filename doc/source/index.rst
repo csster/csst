@@ -11,6 +11,7 @@ csst
 
 `csst` is the pipeline package for the **CSST** (Chinese Space Station Telescope).
 
+* Gitlab: https://csst-tb.bao.ac.cn/code/zhangbo/csst
 * Github: https://github.com/csster/csst
 * PYPI: https://pypi.org/project/csst
 
