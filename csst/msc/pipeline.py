@@ -71,6 +71,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     os.chdir(dir_l1)
 
     if runproc[0]:
+        print("@pipeline: run instrument correction [1/4]")
 
         img_list = []
         wht_list = []
@@ -110,14 +111,18 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
 
             joblib.dump((img_list, wht_list, flg_list, dm), dumpfile)
     else:
+        print("@pipeline: skip instrument correction [1/4]")
         (img_list, wht_list, flg_list, dm) = joblib.load(dumpfile)
 
     # Step 2. Calibrate Position
     if runproc[1]:
+        print("@pipeline: run position calibration [2/4]")
         pcProc = CsstProcMscPositionCalibration()
         pcProc.prepare(dm)
         pcProc.run(img_list, wht_list, flg_list, fn_list, dir_pcref, dir_l1, 2.0)
         pcProc.cleanup(img_list, dir_l1)
+    else:
+        print("@pipeline: skip position calibration [2/4]")
 
     """
     pcProc = CsstProcMscPositionCalibration()
@@ -132,12 +137,15 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
 
     # Step 3. Calibrate Flux
     if runproc[2]:
+        print("@pipeline: run flux calibration [3/4]")
         fcProc = CsstProcFluxCalibration()
         # fcProc.prepare()
         fcProc.run(
             fn_list, img_list, wht_list, flg_list, wcsdir=dir_l1, L1dir=dir_l1, workdir=dir_l1, refdir=dir_l0,
             addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
         fcProc.cleanup(fn_list, dir_l1)
+    else:
+        print("@pipeline: skip flux calibration [3/4]")
 
     """
     fcProc = CsstProcFluxCalibration()
@@ -152,10 +160,13 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
 
     # Step 4. Photometry
     if runproc[3]:
+        print("@pipeline: run photometry [4/4]")
         ptProc = CsstMscPhotometryProc()
         ptProc.prepare()
         ptProc.run(fn_list, out_dir=dir_l1, n_jobs=n_jobs)
         ptProc.cleanup()
+    else:
+        print("@pipeline: skip photometry [4/4]")
 
     return
 

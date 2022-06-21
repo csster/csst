@@ -4,7 +4,7 @@ import re
 
 from astropy.io import fits
 
-from csst.msc.backbone import VER_SIMS, CCD_FILTER_MAPPING
+from .backbone import VER_SIMS, CCD_FILTER_MAPPING
 
 
 class CsstMscDataManager:
