@@ -118,8 +118,8 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     if runproc[1]:
         print("@pipeline: run position calibration [2/4]")
         pcProc = CsstProcMscPositionCalibration()
-        pcProc.prepare(dm)
-        pcProc.run(img_list, wht_list, flg_list, 2.0)
+        pcProc.prepare(dm, n_jobs=n_jobs)
+        pcProc.run(img_list, wht_list, flg_list)
         pcProc.cleanup(img_list, dir_l1)
     else:
         print("@pipeline: skip position calibration [2/4]")

@@ -3,6 +3,7 @@ import time
 from functools import partial
 from multiprocessing import Pool
 from subprocess import Popen
+import joblib
 
 import healpy as hp
 import numpy as np
@@ -401,13 +402,14 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         else:
             print('The total number of the fits files is not 18.')
 
-    def prepare(self, dm): #, path_gaia, path_output, search_radius=2.0):
+    def prepare(self, dm, n_jobs=-1): #, path_gaia, path_output, search_radius=2.0):
         self.dm = dm
+        self.n_jobs = n_jobs
         # self.path_gaia = dm.dir_pcref
         # self.path_output = path_output
         # self.search_radius = search_radius
 
-    def run(self, img_list, wht_list, flg_list, search_radius):
+    def run(self, img_list, wht_list, flg_list):
 
         path_gaia = self.dm.dir_pcref
         path_output = self.dm.dir_l1
@@ -417,18 +419,19 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         self.join_data(img_list, wht_list, flg_list)
 
         print('################## run sextractor ###################')
-        p = Pool()
-        prod_x = partial(self.run_sextractor, path_output=self.dm.dir_l1)
-        result = p.map(prod_x, self.dm.target_ccd_ids)
-        p.close()
-        p.join()
+        joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self.run_sextractor)(_ for _ in self.dm.target_ccd_ids))
+        # p = Pool()
+        # prod_x = partial(self.run_sextractor, path_output=self.dm.dir_l1)
+        # result = p.map(prod_x, self.dm.target_ccd_ids)
+        # p.close()
+        # p.join()
         print('################## sextractor done ###################')
 
         print('############### combine sextractor catalog ###############')
         self.combine_catalog()
 
         print('############### get reference catalog ###############')
-        refcat = self.get_refcat(img_list, search_radius=search_radius, silent=True)
+        refcat = self.get_refcat(img_list, search_radius=2.0, silent=True)
         # Popen('cp ' + refcat + ' ref.cat', shell=True)
 
         print('############### run scamp ##################')
