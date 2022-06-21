@@ -100,7 +100,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         print("combine catalog ")
 
         # output catalog
-        output_catnm = self.dm.pc_combined_image(suffix="acat", ext="fits")
+        output_catnm = self.dm.l1_hardcode(hdcd="combined_acat.fits", comment="combine_catalog")
         # fn = path_output + img_list[0][0].header['FILENAME'][0:-7]
         # output_catnm = str(fn + '.acat.fits')
 
@@ -108,34 +108,35 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         for ccd_id in self.dm.target_ccd_ids:
             this_fp = self.dm.l1_sci(ccd_id=ccd_id, suffix="img", ext="acat")
             print("processing {}".format(this_fp))
-            this_cat = fits.open(this_fp)
-            hdul.extend(this_cat)
+            for hdu in fits.open(this_fp):
+                hdul.append(hdu)
 
         print("writing to {}".format(output_catnm))
         hdul.writeto(output_catnm, overwrite=True)
 
         return
 
-    def run_scamp(self, img_list):
+    def run_scamp(self):
         """
         Run scamp
-
-        Parameters
-        ---------
-        img_list:
-            to join a file 'image_prefix+.acat.fits', e.g.,MSC_210304093000_0000000.acat.fits
-        config_scamp:
-            the config file path for scamp
 
         Returns
         -------
         Image header updated with WCS keywords, MSC_210304093000_0000000.acat.head.
         """
-        image_prefix = (img_list[0][0].header)['FILENAME'][0:-7]
+        # image_prefix = img_list[0][0].header['FILENAME'][0:-7]
+
+        fp_comb_cat = self.dm.l1_hardcode(hdcd="combined_acat.fits", comment="run_scamp")
+        fp_ref_cat = self.dm.l1_hardcode(hdcd="gaia_ldac.fits", comment="run_scamp")
+        fp_merge_cat = self.dm.l1_hardcode(hdcd="merged.cat", comment="run_scamp")
+        fp_full_cat = self.dm.l1_hardcode(hdcd="full.cat", comment="run_scamp")
+
         config_scamp = CONFIG_PATH + "default2.scamp"
-        scamp_comd = 'scamp ' + image_prefix + '.acat.fits -ASTREFCAT_NAME= ' + 'ref.cat\
-        -MERGEDOUTCAT_NAME ' + 'merged.cat -FULLOUTCAT_NAME ' + 'full.cat\
-        -c ' + config_scamp
+        scamp_comd = 'scamp ' + fp_comb_cat + \
+                     ' -ASTREFCAT_NAME ' + fp_ref_cat + \
+                     ' -MERGEDOUTCAT_NAME ' + fp_merge_cat + \
+                     ' -FULLOUTCAT_NAME ' + fp_full_cat + \
+                     ' -c ' + config_scamp
         print(scamp_comd)
         p = Popen(scamp_comd, shell=True)
         p.wait()
@@ -172,7 +173,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         tbl2.header['EXTNAME'] = 'LDAC_OBJECTS'
         return tbl1, tbl2
 
-    def get_refcat(self, img_list, search_radius, silent=True):
+    def get_refcat(self, search_radius, silent=True):
         """
         Get reference catalog for scamp. The reference cat is GAIA EDR3.
 
@@ -203,13 +204,13 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         path_gaia = self.dm.dir_pcref
 
         # combined image
-        fname = self.dm.l1_hardcode("combined_img.fits", "get_refcat: combined image")
-        gaianame = self.dm.l1_hardcode("gaia.fits", "get_refcat: gala name")
-        gaialacnm = self.dm.l1_hardcode("gaialac.fits", "get_refcat: gala lac name")
-
+        fname = self.dm.l1_hardcode("combined_img.fits", "get_refcat")
+        gaianame = self.dm.l1_hardcode("gaia.fits", "get_refcat")
+        gaialacnm = self.dm.l1_hardcode("gaia_ldac.fits", "get_refcat")
         # ref cat name
-        outcat = self.dm.l1_hardcode("ref.cat")
+        # outcat = self.dm.l1_hardcode("ref.cat", "get_refcat")
 
+        # read combined image
         hdu = fits.open(fname)
         header1 = hdu[0].header
         header2 = hdu[1].header
@@ -239,7 +240,8 @@ class CsstProcMscPositionCalibration(CsstProcessor):
             print('i= %5.5d' % i, path_gaia)
             fname = path_gaia + 'healpix-' + '%5.5d' % i + '.fits'
             print('fname=', fname)
-            if not silent: print('Reading ', fname)
+            if not silent:
+                print('Reading ', fname)
             d = table.Table.read(fname)
             refcat = [refcat, d]
             refcat = table.vstack(refcat, join_type='inner')
@@ -259,26 +261,24 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         refcat.rename_column('ra_error', 'ERRA_WORLD')
         refcat.rename_column('dec_error', 'ERRB_WORLD')
         refcat.rename_column('phot_g_mean_mag', 'MAG')
-        if outcat:
-            refcat.write(outcat, format='fits', overwrite=True)
+        refcat.write(gaianame, format='fits', overwrite=True)
 
-        if os.path.exists(gaianame):
-            print('exist')
-            hdu = fits.open(gaianame)
-            hdu1 = self.convert_hdu_to_ldac(hdu)
-            hdup = fits.PrimaryHDU()
-            hdu = hdu1[0]
-            tbhdu = hdu1[1]
-            thdulist = fits.HDUList([hdup, hdu, tbhdu])
-            if os.path.isfile(gaialacnm):
-                os.remove(gaialacnm)
-            thdulist.writeto(gaialacnm)
+        # print('exist')
+        hdu = fits.open(gaianame)
+        hdu1 = self.convert_hdu_to_ldac(hdu)
+        hdup = fits.PrimaryHDU()
+        hdu = hdu1[0]
+        tbhdu = hdu1[1]
+        thdulist = fits.HDUList([hdup, hdu, tbhdu])
+        # if os.path.exists(gaialacnm):
+        #     os.remove(gaialacnm)
+        thdulist.writeto(gaialacnm, overwrite=True)
 
         print('##################### end #####################')
-        return gaialacnm
+        return
 
     @staticmethod
-    def rewrite_wcs_head(head):
+    def rewrite_wcs_head(head, output):
         """
         Rewrite the WCS head from Scamp to the standard fits header
 
@@ -291,9 +291,9 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         wcshead: a new head file in fits format
 
         """
-        wcshead = head + '.fits'
+        # wcshead = head + '.fits'
         f = open(head, 'r')
-        f1 = open(wcshead, 'w')
+        f1 = open(output, 'w')
         a = ''
         i = 0
         for v in f.readlines():
@@ -310,18 +310,11 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         f1.write(a.replace('\n', ''))
         f1.close()
         f.close()
-        return wcshead
+        return
 
-    def check_astrometry(self, img_list, path_output):
+    def check_astrometry(self):
         """
         Check position calibration quality
-
-        Parameters
-        ------------
-        img_list:
-            list of images, in table format
-        path_output:
-            work dir
 
         Returns
         -------
@@ -337,70 +330,83 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         print('############## check the astrometry quality and save files ################')
         r1 = []
         d1 = []
-        image_prefix = (img_list[0][0].header)['FILENAME'][0:-7]
-        fn = path_output + image_prefix
-        wcshead = self.rewrite_wcs_head(fn + '.acat.head')
-        acat = fits.open(fn + '.acat.fits')
-        acat_change = str(fn + '.acat.change.fits')
-        cat_suffix = '.acat'
-        hdul = fits.HDUList()
-        if len(img_list) == 18:
-            for i in range(0, len(img_list)):
-                wcshdr = fits.getheader(wcshead, i, ignore_missing_simple=True)  # read headers and change to RA---TPV,DEC--TPV for wcs_transfer package
-                wcshdr['CTYPE1'] = 'RA---TPV'
-                wcshdr['CTYPE2'] = 'DEC--TPV'
-                w = WCS(wcshdr)
-                # print(wcshdr)
-                cat_nm = path_output + (img_list[i][0].header)['FILENAME'] + cat_suffix
-                cat_i = fits.open(cat_nm)
-                sexcat = cat_i[2].data
-                ra_sex = sexcat['ALPHA_J2000']
-                dec_sex = sexcat['DELTA_J2000']
-                x = sexcat['XWIN_IMAGE']
-                y = sexcat['YWIN_IMAGE']
-                r, d = w.all_pix2world(x, y, 0)  # convert xwin,ywin to ra,de
-                sexcat['ALPHA_J2000'] = r
-                sexcat['DELTA_J2000'] = d
-                cat_i[2].data = sexcat
-                hdul.append(cat_i[0])
-                hdul.append(cat_i[1])
-                hdul.append(cat_i[2])
-                r1 = np.hstack((r1, r))
-                d1 = np.hstack((d1, d))
-            obsc = SkyCoord(ra=r1 * u.degree, dec=d1 * u.degree)
-            tmp_cat = np.zeros((len(obsc), 2))
-            tmp_cat[:, 0] = obsc.ra
-            tmp_cat[:, 1] = obsc.dec
-            np.savetxt(path_output + 'scamp_coord.txt', tmp_cat, fmt="%.10f %.10f", delimiter="\n")
-            hdul.writeto(acat_change, overwrite=True)  # update the cat with new ra,dec (from 1st scamp wcs.)
-        else:
-            print('the length of fitslist is not equal to 18,needs to check')
 
-    def write_headers(self, img_list):
+        # image_prefix = (img_list[0][0].header)['FILENAME'][0:-7]
+        # fn = path_output + image_prefix
+
+        # combined catalog (head)
+        wcshead_original = self.dm.l1_hardcode(hdcd="combined_acat.head", comment="check_astrometry")
+        wcshead_rewritten = self.dm.l1_hardcode(hdcd="combined_acat.head.fits", comment="check_astrometry")
+        # acat = self.dm.l1_hardcode(hdcd="combined_acat.fits", comment="check_astrometry")
+        acat_change = self.dm.l1_hardcode(hdcd="combined_acat.change.fits", comment="check_astrometry")
+
+        self.rewrite_wcs_head(wcshead_original, wcshead_rewritten)
+        # acat = fits.open(fn + '.acat.fits')
+        # acat_change = str(fn + '.acat.change.fits')
+        # cat_suffix = '.acat'
+
+        fp_scamp_coord = self.dm.l1_hardcode(hdcd="scamp_coord.txt", comment="check_astrometry")
+
+        hdul = fits.HDUList()
+        # for i in range(0, len(img_list)):
+        for i, this_ccd_id in enumerate(self.dm.target_ccd_ids):
+            wcshdr = fits.getheader(wcshead_rewritten, i, ignore_missing_simple=True)
+            # read headers and change to RA---TPV,DEC--TPV for wcs_transfer package
+            wcshdr['CTYPE1'] = 'RA---TPV'
+            wcshdr['CTYPE2'] = 'DEC--TPV'
+            w = WCS(wcshdr)
+            # print(wcshdr)
+            # cat_nm = path_output + img_list[i][0].header['FILENAME'] + cat_suffix
+            cat_nm = self.dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="acat")
+            cat_i = fits.open(cat_nm)
+            sexcat = cat_i[2].data
+            ra_sex = sexcat['ALPHA_J2000']
+            dec_sex = sexcat['DELTA_J2000']
+            x = sexcat['XWIN_IMAGE']
+            y = sexcat['YWIN_IMAGE']
+            r, d = w.all_pix2world(x, y, 0)  # convert xwin,ywin to ra,de
+            sexcat['ALPHA_J2000'] = r
+            sexcat['DELTA_J2000'] = d
+            cat_i[2].data = sexcat
+            hdul.append(cat_i[0])
+            hdul.append(cat_i[1])
+            hdul.append(cat_i[2])
+            r1 = np.hstack((r1, r))
+            d1 = np.hstack((d1, d))
+        obsc = SkyCoord(ra=r1 * u.degree, dec=d1 * u.degree)
+        tmp_cat = np.zeros((len(obsc), 2))
+        tmp_cat[:, 0] = obsc.ra
+        tmp_cat[:, 1] = obsc.dec
+        np.savetxt(fp_scamp_coord, tmp_cat, fmt="%.10f %.10f", delimiter="\n")
+        hdul.writeto(acat_change, overwrite=True)  # update the cat with new ra,dec (from 1st scamp wcs.)
+
+    def write_headers(self):
         """
         Wrtie history to header
         """
-        head_suffix = img_list[0][0].header['FILENAME'][0:-7] + '.acat.head.fits'
+        # head_suffix = img_list[0][0].header['FILENAME'][0:-7] + '.acat.head.fits'
+        head_suffix = self.dm.l1_hardcode(hdcd="combined_acat.head.fits", comment="write_headers")
+
         hdul2 = fits.open(head_suffix, ignore_missing_simple=True)
-        if len(img_list) == 18:
-            for i in range(0, len(img_list)):
-                fits_nm = img_list[i][0].header['FILENAME'] + '.head'
-                hdul1 = fits.open(fits_nm, mode='update', ignore_missing_simple=True)
-                hdr = hdul1[0].header
-                hdr2 = hdul2[i].header
-                hdr.extend(hdr2, unique=True, update=True)
-                WCS_S = 0
-                WCS_V = '2.0.4'
-                WCS_P = 'default.scamp'
-                WCS_TOL = time.strftime('%Y-%m-%d %H:%M:%S %p')
-                hdr.set('WCS_S', '0', '0=done')
-                hdr.set('WCS_V', WCS_V, 'Version of WCS calibration')
-                hdr.set('WCS_P', WCS_P, 'Configure file name of WCS')
-                hdr.set('WCS_TOL', WCS_TOL, 'Time of last wcs calibration')
-                # hdul1.flush()
-                # hdul1.close()
-        else:
-            print('The total number of the fits files is not 18.')
+        # for i in range(0, len(img_list)):
+        for i, this_ccd_id in enumerate(self.dm.target_ccd_ids):
+            # fits_nm = img_list[i][0].header['FILENAME'] + '.head'
+            fits_nm = self.dm.l1_sci(this_ccd_id, suffix="img", ext="head")
+
+            hdul1 = fits.open(fits_nm, mode='update', ignore_missing_simple=True)
+            hdr = hdul1[0].header
+            hdr2 = hdul2[i].header
+            hdr.extend(hdr2, unique=True, update=True)
+            WCS_S = 0
+            WCS_V = '2.0.4'
+            WCS_P = 'default.scamp'
+            WCS_TOL = time.strftime('%Y-%m-%d %H:%M:%S %p')
+            hdr.set('WCS_S', '0', '0=done')
+            hdr.set('WCS_V', WCS_V, 'Version of WCS calibration')
+            hdr.set('WCS_P', WCS_P, 'Configure file name of WCS')
+            hdr.set('WCS_TOL', WCS_TOL, 'Time of last wcs calibration')
+
+        return
 
     def prepare(self, dm, n_jobs=-1): #, path_gaia, path_output, search_radius=2.0):
         self.dm = dm
@@ -419,7 +425,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         self.join_data(img_list, wht_list, flg_list)
 
         print('################## run sextractor ###################')
-        joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self.run_sextractor)(_ for _ in self.dm.target_ccd_ids))
+        joblib.Parallel(n_jobs=self.n_jobs)(joblib.delayed(self.run_sextractor)(_) for _ in self.dm.target_ccd_ids)
         # p = Pool()
         # prod_x = partial(self.run_sextractor, path_output=self.dm.dir_l1)
         # result = p.map(prod_x, self.dm.target_ccd_ids)
@@ -431,43 +437,45 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         self.combine_catalog()
 
         print('############### get reference catalog ###############')
-        refcat = self.get_refcat(img_list, search_radius=2.0, silent=True)
+        self.get_refcat(search_radius=2.0, silent=True)
+        # gaianame gaialacnm
         # Popen('cp ' + refcat + ' ref.cat', shell=True)
 
         print('############### run scamp ##################')
-        self.run_scamp(img_list)
+        self.run_scamp()
         print('################ scamp done #################')
 
         print('Checking astrometry quality....')
-        self.check_astrometry(img_list, path_output)
+        self.check_astrometry()
 
         print('################ updating headers.... #############')
-        self.write_headers(img_list)
+        self.write_headers()
 
         print('#### Position calibration process done ####')
 
         return
 
-    def cleanup(self, img_list, path_output):
+    def cleanup(self):
         # clean up environment
-        image_prefix = img_list[0][0].header['FILENAME'][0:-7]
-        for i in range(0, len(img_list)):
-            fn = img_list[i][0].header['FILENAME'] + '.acat'
-            if os.path.isfile(path_output + fn):
-                os.remove(path_output + fn)
-        if os.path.isfile(path_output + image_prefix + '.gaia.fits'):
-            os.remove(path_output + image_prefix + '.gaia.fits')
-        if os.path.isfile(path_output + image_prefix + '.gaialac.fits'):
-            os.remove(path_output + image_prefix + '.gaialac.fits')
-        if os.path.isfile(path_output + 'scamp.xml'):
-            os.remove(path_output + 'scamp.xml')
-        if os.path.isfile(path_output + 'full_1.cat'):
-            os.remove(path_output + 'full_1.cat')
-        if os.path.isfile(path_output + 'merged_1.cat'):
-            os.remove(path_output + 'merged_1.cat')
-        if os.path.isfile(path_output + image_prefix + '_img.fits.back'):
-            os.remove( path_output + image_prefix + '_img.fits.back')
-        if os.path.isfile(path_output + image_prefix + '_wht.fits'):
-            os.remove(path_output + image_prefix + '_wht.fits')
-        if os.path.isfile(path_output + image_prefix + '_flg.fits'):
-            os.remove(path_output + image_prefix + '_flg.fits')
+        # image_prefix = img_list[0][0].header['FILENAME'][0:-7]
+        # for i in range(0, len(img_list)):
+        #     fn = img_list[i][0].header['FILENAME'] + '.acat'
+        #     if os.path.isfile(path_output + fn):
+        #         os.remove(path_output + fn)
+        # if os.path.isfile(path_output + image_prefix + '.gaia.fits'):
+        #     os.remove(path_output + image_prefix + '.gaia.fits')
+        # if os.path.isfile(path_output + image_prefix + '.gaialac.fits'):
+        #     os.remove(path_output + image_prefix + '.gaialac.fits')
+        # if os.path.isfile(path_output + 'scamp.xml'):
+        #     os.remove(path_output + 'scamp.xml')
+        # if os.path.isfile(path_output + 'full_1.cat'):
+        #     os.remove(path_output + 'full_1.cat')
+        # if os.path.isfile(path_output + 'merged_1.cat'):
+        #     os.remove(path_output + 'merged_1.cat')
+        # if os.path.isfile(path_output + image_prefix + '_img.fits.back'):
+        #     os.remove( path_output + image_prefix + '_img.fits.back')
+        # if os.path.isfile(path_output + image_prefix + '_wht.fits'):
+        #     os.remove(path_output + image_prefix + '_wht.fits')
+        # if os.path.isfile(path_output + image_prefix + '_flg.fits'):
+        #     os.remove(path_output + image_prefix + '_flg.fits')
+        pass
