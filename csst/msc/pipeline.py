@@ -65,7 +65,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     # set paths
     dm = CsstMscDataManager(ver_sim=ver_sim, dir_l0=dir_l0, dir_l1=dir_l1, dir_pcref=dir_pcref, path_aux=path_aux)
     # set target ccd_ids
-    ccd_ids = dm.set_ccd_ids(ccd_ids)
+    dm.set_ccd_ids(ccd_ids)
 
     # Step 1. Correct instrumental effect
     os.chdir(dir_l1)
@@ -76,7 +76,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
         wht_list = []
         flg_list = []
         fn_list = []
-        for this_ccd_id in ccd_ids:
+        for this_ccd_id in dm.target_ccd_ids:
             print("processing CCD {}".format(this_ccd_id))
             fp_raw = dm.l0_sci(ccd_id=this_ccd_id)
 
@@ -174,7 +174,7 @@ if __name__ == "__main__":
         raise ValueError("HOSTNAME {} not known!".format(HOSTNAME))
 
     # process this exposure
-    do_one_exposure(**config)
+    do_one_exposure(runproc=(1, 1, 0, 0), **config)
 
     for k, v in config.items():
         eval("{}=config[\"{}\"]".format(k, k))
