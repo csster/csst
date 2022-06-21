@@ -20,114 +20,102 @@ CONFIG_PATH = PACKAGE_PATH + "/msc/pos_calib_config/"
 
 class CsstProcMscPositionCalibration(CsstProcessor):
 
-    def join_data(self, img_list, wht_list, flg_list, path_output):
+    def join_data(self, img_list, wht_list, flg_list):
         """
-        Prepare data for running scamp; Combine all image data, weight files, flag files to their one frame.
+        Prepare data for running scamp
+        Combine all image data, weight files, flag files to their one frame.
 
         Parameters
         ----------
         img_list:
             image files to join together, e.g.,MSC_210304093000_0000000_06_img.fits
         wht_list:
-            weith files to join together, e.g.,MSC_210304093000_0000000_06_img.fits
+            weight files to join together, e.g.,MSC_210304093000_0000000_06_img.fits
         flg_list:
             flag files to join together, e.g.,e.g.,MSC_210304093000_0000000_06_flg.fits
-        path_output:
-            the output dir for the joined file.
 
         Returns
         -------
-        The joined multi-extension file(not stacked), weight, flag files.
+        The joined multi-extension file (not stacked), weight, flag files.
         e.g., MSC_210304093000_0000000_img.fits,MSC_210304093000_0000000_wht.fits, MSC_210304093000_0000000_flg.fits.
 
         """
 
-        img_prefix = img_list[0][0].header['FILENAME'][0:-7]
-        output_imgnm = path_output + img_prefix + '_img.fits'
         hdul_img = fits.HDUList()
-        for i in range(0, len(img_list)):
-            h0 = fits.PrimaryHDU(header=img_list[i][0].header)
-            h1 = fits.ImageHDU(data=img_list[i][1].data, header=img_list[i][1].header)
-            hdul_img.append(h0)
-            hdul_img.append(h1)
-        hdul_img.writeto(output_imgnm, overwrite=True)
-
-        output_whtnm = path_output + img_prefix + '_wht.fits'
         hdul_wht = fits.HDUList()
-        for i in range(0, len(wht_list)):
-            h0 = fits.PrimaryHDU(header=wht_list[i][0].header)
-            h1 = fits.ImageHDU(data=wht_list[i][1].data, header=wht_list[i][1].header)
-            hdul_wht.append(h0)
-            hdul_wht.append(h1)
-        hdul_wht.writeto(output_whtnm, overwrite=True)
-
-        output_flgnm = path_output + img_prefix + '_flg.fits'
         hdul_flg = fits.HDUList()
-        for i in range(0, len(flg_list)):
-            h0 = fits.PrimaryHDU(header=flg_list[i][0].header)
-            h1 = fits.ImageHDU(data=flg_list[i][1].data, header=flg_list[i][1].header)
-            hdul_flg.append(h0)
-            hdul_flg.append(h1)
-        hdul_flg.writeto(output_flgnm, overwrite=True)
+        for i in range(len(img_list)):
+            hdul_img.append(img_list[i][0])
+            hdul_img.append(img_list[i][1])
+            hdul_wht.append(wht_list[i][0])
+            hdul_wht.append(wht_list[i][1])
+            hdul_flg.append(flg_list[i][0])
+            hdul_flg.append(flg_list[i][1])
+        hdul_img.writeto(self.dm.l1_hardcode("combined_img.fits"), overwrite=True)
+        hdul_wht.writeto(self.dm.l1_hardcode("combined_wht.fits"), overwrite=True)
+        hdul_flg.writeto(self.dm.l1_hardcode("combined_flg.fits"), overwrite=True)
 
-    def run_sextractor(self, fn_list, path_output):
+        return
+
+    def run_sextractor(self, ccd_id):
         """
         Run sextractor
 
         Parameters 
         ----------
-        fn_list:
-            file name list, e.g.,MSC_210304093000_0000000_06_img.fits...
-        config_sextractor:
-            the path for sextractor configuration file.
-        path_output:
-            the current working dir
+        ccd_id:
+            file path of image, e.g., MSC_210304093000_0000000_06_img.fits
 
         Returns
         -------
-        The photometric catalog, with position and flux, e.g.,MSC_210304093000_0000000_06_img.acat
+        The photometric catalog, with position and flux, e.g., MSC_210304093000_0000000_06_img.acat
         """
-        fn = fn_list
+        # input image
+        fp_img = self.dm.l1_sci(ccd_id=ccd_id, suffix="img", ext="fits")
+        # output catalog
+        fp_cat = self.dm.l1_sci(ccd_id=ccd_id, suffix="img", ext="acat")
+
+        # run sex and output the catalog
         config_sextractor = CONFIG_PATH + "new_csst_realtime.no.weight.sex"
         sex_comd1 = 'sex -c ' + config_sextractor + ' '
-        sex_comd2 = fn + ' -CATALOG_NAME ' + fn[0:-5] + '.acat'
-        sex_comd3 = ' -PARAMETERS_NAME ' + CONFIG_PATH + 'csst_realtime.param' + ' -FILTER_NAME ' + CONFIG_PATH + 'csst_realtime.conv' + ' -STARNNW_NAME ' + CONFIG_PATH + 'csst_realtime.nnw'
+        sex_comd2 = fp_img + ' -CATALOG_NAME ' + fp_cat
+        sex_comd3 = ' -PARAMETERS_NAME ' + CONFIG_PATH + 'csst_realtime.param' + ' -FILTER_NAME ' \
+                    + CONFIG_PATH + 'csst_realtime.conv' + ' -STARNNW_NAME ' + CONFIG_PATH + 'csst_realtime.nnw'
         sex_comd = sex_comd1 + sex_comd2 + sex_comd3
         print(sex_comd)
         p = Popen(sex_comd, shell=True)
         p.wait()
 
-    def combine_catalog(self, img_list, path_output):
+    def combine_catalog(self):
         """
-        Combine the sextractor catalog together
+        Combine the sex catalog together
 
-        Parameters
-        -----------
-        img_list:
-            image list, in table format
-        path_output:
-            the output dir
-
-        Returns
-        -------
+        Output
+        ------
         The combined catalog,e.g., MSC_210304093000_0000000.acat.fits
-        """
-        fn = path_output + img_list[0][0].header['FILENAME'][0:-7]
-        output_catnm = str(fn + '.acat.fits')
-        hdul = fits.HDUList()
-        if len(img_list) == 18:
-            for i in range(0, len(img_list)):
-                image_prefix = img_list[i][0].header['FILENAME']
-                cat_nm = path_output + image_prefix + '.acat'
-                cat_i = fits.open(cat_nm)
-                hdul.append(cat_i[0])
-                hdul.append(cat_i[1])
-                hdul.append(cat_i[2])
-            hdul.writeto(output_catnm, overwrite=True)
-        else:
-            print('the length of file list in not equal to 18, needs to check')
 
-    def run_scamp(self, img_list, path_output):
+        """
+
+        print("combine catalog ")
+
+        # output catalog
+        output_catnm = self.dm.pc_combined_image(suffix="acat", ext="fits")
+        # fn = path_output + img_list[0][0].header['FILENAME'][0:-7]
+        # output_catnm = str(fn + '.acat.fits')
+
+        hdul = fits.HDUList()
+        for ccd_id in self.dm.target_ccd_ids:
+            this_fp = self.dm.l1_sci(ccd_id=ccd_id, suffix="img", ext="acat")
+            print("processing {}".format(this_fp))
+            this_cat = fits.open(this_fp)
+            hdul.extend(this_cat)
+
+        print("writing to {}".format(output_catnm))
+        hdul.writeto(output_catnm, overwrite=True)
+
+        return
+
+    def run_scamp(self, img_list):
         """
         Run scamp
 
@@ -151,7 +139,8 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         p = Popen(scamp_comd, shell=True)
         p.wait()
 
-    def convert_hdu_to_ldac(self, hdu):
+    @staticmethod
+    def convert_hdu_to_ldac(hdu):
         """
         Convert an hdu table to a fits_ldac table (format used by astromatic suite)
 
@@ -182,7 +171,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         tbl2.header['EXTNAME'] = 'LDAC_OBJECTS'
         return tbl1, tbl2
 
-    def get_refcat(self, img_list, path_gaia, search_radius, silent=True):
+    def get_refcat(self, img_list, search_radius, silent=True):
         """
         Get reference catalog for scamp. The reference cat is GAIA EDR3.
 
@@ -204,11 +193,22 @@ class CsstProcMscPositionCalibration(CsstProcessor):
             e.g.,MSC_210304093000_0000000.gaialac.fits
 
         """
-        image_prefix = (img_list[0][0].header)['FILENAME'][0:-7]
-        fname = image_prefix + '_img.fits'
-        gaianame = image_prefix + '.gaia.fits'
-        gaialacnm = image_prefix + '.gaialac.fits'
-        outcat = gaianame
+        # image_prefix = img_list[0][0].header['FILENAME'][0:-7]
+        # fname = image_prefix + '_img.fits'
+        # gaianame = image_prefix + '.gaia.fits'
+        # gaialacnm = image_prefix + '.gaialac.fits'
+        # outcat = gaianame
+
+        path_gaia = self.dm.dir_pcref
+
+        # combined image
+        fname = self.dm.l1_hardcode("combined_img.fits", "get_refcat: combined image")
+        gaianame = self.dm.l1_hardcode("gaia.fits", "get_refcat: gala name")
+        gaialacnm = self.dm.l1_hardcode("gaialac.fits", "get_refcat: gala lac name")
+
+        # ref cat name
+        outcat = self.dm.l1_hardcode("ref.cat")
+
         hdu = fits.open(fname)
         header1 = hdu[0].header
         header2 = hdu[1].header
@@ -258,9 +258,10 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         refcat.rename_column('ra_error', 'ERRA_WORLD')
         refcat.rename_column('dec_error', 'ERRB_WORLD')
         refcat.rename_column('phot_g_mean_mag', 'MAG')
-        if outcat: refcat.write(outcat, format='fits', overwrite=True)
+        if outcat:
+            refcat.write(outcat, format='fits', overwrite=True)
 
-        if os.path.isfile(gaianame):
+        if os.path.exists(gaianame):
             print('exist')
             hdu = fits.open(gaianame)
             hdu1 = self.convert_hdu_to_ldac(hdu)
@@ -268,7 +269,8 @@ class CsstProcMscPositionCalibration(CsstProcessor):
             hdu = hdu1[0]
             tbhdu = hdu1[1]
             thdulist = fits.HDUList([hdup, hdu, tbhdu])
-            if os.path.isfile(gaialacnm): os.remove(gaialacnm)
+            if os.path.isfile(gaialacnm):
+                os.remove(gaialacnm)
             thdulist.writeto(gaialacnm)
 
         print('##################### end #####################')
@@ -398,34 +400,47 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         else:
             print('The total number of the fits files is not 18.')
 
-    def prepare(self, path_gaia, path_output, search_radius=2.0):
-        self.path_gaia = path_gaia
-        self.path_output = path_output
-        self.search_radius = search_radius
+    def prepare(self, dm): #, path_gaia, path_output, search_radius=2.0):
+        self.dm = dm
+        # self.path_gaia = dm.dir_pcref
+        # self.path_output = path_output
+        # self.search_radius = search_radius
 
-    def run(self, img_list, wht_list, flg_list, fn_list, path_gaia, path_output, search_radius):
+    def run(self, img_list, wht_list, flg_list, path_gaia, path_output, search_radius):
+
+        # fn_list = [self.dm.l1_sci(ccd_id=_, suffix="img", ext="fits") for _ in self.dm.target_ccd_ids]
+
         print('preparing files for position calibration....')
-        self.join_data(img_list, wht_list, flg_list, path_output=path_output)
+        self.join_data(img_list, wht_list, flg_list)
+
         print('################## run sextractor ###################')
         p = Pool()
-        prod_x = partial(self.run_sextractor, path_output=path_output)
-        result = p.map(prod_x, fn_list)
+        prod_x = partial(self.run_sextractor, path_output=self.dm.dir_l1)
+        result = p.map(prod_x, self.dm.target_ccd_ids)
         p.close()
         p.join()
         print('################## sextractor done ###################')
+
         print('############### combine sextractor catalog ###############')
-        self.combine_catalog(img_list, path_output)
-        print('############### get reference catalog ###############3')
-        refcat = self.get_refcat(img_list, path_gaia=path_gaia, search_radius=search_radius, silent=True)
-        Popen('cp ' + refcat + ' ref.cat', shell=True)
+        self.combine_catalog()
+
+        print('############### get reference catalog ###############')
+        refcat = self.get_refcat(img_list, search_radius=search_radius, silent=True)
+        # Popen('cp ' + refcat + ' ref.cat', shell=True)
+
         print('############### run scamp ##################')
-        self.run_scamp(img_list, path_output=path_output)
+        self.run_scamp(img_list)
         print('################ scamp done #################')
+
         print('Checking astrometry quality....')
         self.check_astrometry(img_list, path_output)
+
         print('################ updating headers.... #############')
         self.write_headers(img_list)
+
         print('#### Position calibration process done ####')
+
+        return
 
     def cleanup(self, img_list, path_output):
         # clean up environment

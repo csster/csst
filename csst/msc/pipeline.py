@@ -1,4 +1,5 @@
 import glob
+import joblib
 import os
 
 from csst.msc.backbone import CCD_ID_LIST, VER_SIMS
@@ -45,7 +46,7 @@ CONFIG_PMO = dict(
 
 
 def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux="", ccd_ids=None,
-                    n_jobs=18, backend_multithreading=False):
+                    n_jobs=18, backend_multithreading=False, runproc=(1, 0, 0, 0), dumpfile="test.dump"):
 
     # currently C3 and C5.1 are tested
     try:
@@ -63,52 +64,61 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
 
     # set paths
     dm = CsstMscDataManager(ver_sim=ver_sim, dir_l0=dir_l0, dir_l1=dir_l1, dir_pcref=dir_pcref, path_aux=path_aux)
-    # request for ccd_ids
-    ccd_ids = dm.get_ccd_ids(ccd_ids)
+    # set target ccd_ids
+    ccd_ids = dm.set_ccd_ids(ccd_ids)
 
     # Step 1. Correct instrumental effect
     os.chdir(dir_l1)
 
-    img_list = []
-    wht_list = []
-    flg_list = []
-    fn_list = []
-    for this_ccd_id in ccd_ids:
-        print("processing CCD {}".format(this_ccd_id))
-        fp_raw = dm.l0_sci(ccd_id=this_ccd_id)
+    if runproc[0]:
 
-        # read data with CsstMscImgData.read
-        raw = CsstMscImgData.read(fp_raw)
+        img_list = []
+        wht_list = []
+        flg_list = []
+        fn_list = []
+        for this_ccd_id in ccd_ids:
+            print("processing CCD {}".format(this_ccd_id))
+            fp_raw = dm.l0_sci(ccd_id=this_ccd_id)
 
-        # in the future, use get_* functions grab
-        bias = dm.get_bias(this_ccd_id)
-        dark = dm.get_dark(this_ccd_id)
-        flat = dm.get_flat(this_ccd_id)
+            # read data with CsstMscImgData.read
+            raw = CsstMscImgData.read(fp_raw)
 
-        # initialize Instrument Processor
-        instProc = CsstMscInstrumentProc()
-        instProc.prepare(n_jobs=n_jobs)
-        img, wht, flg = instProc.run(raw, bias, dark, flat, ver_sim)
-        instProc.cleanup()
-        fp_img = img[0].header["FILENAME"] + '.fits'
+            # in the future, use get_* functions grab
+            bias = dm.get_bias(this_ccd_id)
+            dark = dm.get_dark(this_ccd_id)
+            flat = dm.get_flat(this_ccd_id)
 
-        # save img, wht, flg to somewhere
-        img.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="fits"), overwrite=True)
-        wht.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="wht", ext="fits"), overwrite=True)
-        flg.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="flg", ext="fits"), overwrite=True)
-        # save header
-        img[1].header.tofile(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="head"), overwrite=True)
+            # initialize Instrument Processor
+            instProc = CsstMscInstrumentProc()
+            instProc.prepare(n_jobs=n_jobs)
+            img, wht, flg = instProc.run(raw, bias, dark, flat, ver_sim)
+            instProc.cleanup()
+            # fp_img = img[0].header["FILENAME"] + '.fits'
 
-        # append img, wht, flg list
-        img_list.append(img)
-        wht_list.append(wht)
-        flg_list.append(flg)
-        fn_list.append(fp_img)
+            # save img, wht, flg to somewhere
+            img.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="fits"), overwrite=True)
+            wht.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="wht", ext="fits"), overwrite=True)
+            flg.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="flg", ext="fits"), overwrite=True)
+            # save header
+            img[1].header.tofile(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="head"), overwrite=True)
+
+            # append img, wht, flg list
+            img_list.append(img)
+            wht_list.append(wht)
+            flg_list.append(flg)
+            # fn_list.append(fp_img)
+
+            joblib.dump((img_list, wht_list, flg_list, dm), dumpfile)
+    else:
+        (img_list, wht_list, flg_list, dm) = joblib.load(dumpfile)
 
     # Step 2. Calibrate Position
-    pcProc = CsstProcMscPositionCalibration()
-    pcProc.run(img_list, wht_list, flg_list, fn_list, dir_pcref, dir_l1, 2.0)
-    pcProc.cleanup(img_list, dir_l1)
+    if runproc[1]:
+        pcProc = CsstProcMscPositionCalibration()
+        pcProc.prepare(dm)
+        pcProc.run(img_list, wht_list, flg_list, fn_list, dir_pcref, dir_l1, 2.0)
+        pcProc.cleanup(img_list, dir_l1)
+
     """
     pcProc = CsstProcMscPositionCalibration()
     pcProc.prepare(dm)
@@ -121,12 +131,13 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     """
 
     # Step 3. Calibrate Flux
-    fcProc = CsstProcFluxCalibration()
-    # fcProc.prepare()
-    fcProc.run(
-        fn_list, img_list, wht_list, flg_list, wcsdir=dir_l1, L1dir=dir_l1, workdir=dir_l1, refdir=dir_l0,
-        addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
-    fcProc.cleanup(fn_list, dir_l1)
+    if runproc[2]:
+        fcProc = CsstProcFluxCalibration()
+        # fcProc.prepare()
+        fcProc.run(
+            fn_list, img_list, wht_list, flg_list, wcsdir=dir_l1, L1dir=dir_l1, workdir=dir_l1, refdir=dir_l0,
+            addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
+        fcProc.cleanup(fn_list, dir_l1)
 
     """
     fcProc = CsstProcFluxCalibration()
@@ -140,10 +151,11 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     """
 
     # Step 4. Photometry
-    # ptProc = CsstMscPhotometryProc()
-    # ptProc.prepare()
-    # ptProc.run(fn_list, out_dir=dir_l1, n_jobs=n_jobs)
-    # ptProc.cleanup()
+    if runproc[3]:
+        ptProc = CsstMscPhotometryProc()
+        ptProc.prepare()
+        ptProc.run(fn_list, out_dir=dir_l1, n_jobs=n_jobs)
+        ptProc.cleanup()
 
     return
 

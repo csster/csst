@@ -1,9 +1,10 @@
+import os
 import glob
 import re
 
 from astropy.io import fits
 
-from .backbone import VER_SIMS, CCD_FILTER_MAPPING
+from csst.msc.backbone import VER_SIMS, CCD_FILTER_MAPPING
 
 
 class CsstMscDataManager:
@@ -30,6 +31,9 @@ class CsstMscDataManager:
         self.dir_pcref = dir_pcref
         self.path_aux = path_aux
         self.ver_sim = ver_sim
+        self.target_ccd_ids = []
+
+        self.hardcode_history = []
 
         fps_img = self.glob_image(dir_l0, ver_sim=ver_sim)
         fps_cat = self.glob_cat(dir_l0, ver_sim=ver_sim)
@@ -207,11 +211,11 @@ class CsstMscDataManager:
         """ SCAMP coord """
         return os.path.join(self.dir_l1, "scamp_coord.txt")
 
-    def get_ccd_ids(self, ccd_ids=None):
-        """  """
+    def set_ccd_ids(self, ccd_ids=None):
+        """ set target ccd ids """
         if ccd_ids is None:
             # default ccd_ids
-            ccd_ids = self.available_ccd_ids
+            self.target_ccd_ids = self.available_ccd_ids
         else:
             try:
                 # assert ccd_ids is a subset of available ccd_ids
@@ -220,7 +224,9 @@ class CsstMscDataManager:
                 print("@DM: available CCD IDs are ", self.available_ccd_ids)
                 print("@DM: target CCD IDs are ", ccd_ids)
                 raise ae
-        return ccd_ids
+            self.target_ccd_ids = ccd_ids
+        print("final target CCD IDs are ", self.target_ccd_ids)
+        return
 
     def get_bias(self, ccd_id=6):
         fp = glob.glob(self.path_aux.format("CLB", ccd_id))[0]
@@ -233,6 +239,12 @@ class CsstMscDataManager:
     def get_flat(self, ccd_id=6):
         fp = glob.glob(self.path_aux.format("CLF", ccd_id))[0]
         return fits.getdata(fp)
+
+    def l1_hardcode(self, hdcd="", comment=""):
+        fp = os.path.join(self.dir_l1, hdcd)
+        # record hardcode history
+        self.hardcode_history.append(dict(hdcd=fp, comment=comment))
+        return fp
 
 
 if __name__ == "__main__":
