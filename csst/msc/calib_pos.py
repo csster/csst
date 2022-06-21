@@ -276,7 +276,8 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         print('##################### end #####################')
         return gaialacnm
 
-    def rewrite_wcs_head(self, head):
+    @staticmethod
+    def rewrite_wcs_head(head):
         """
         Rewrite the WCS head from Scamp to the standard fits header
 
@@ -406,8 +407,10 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         # self.path_output = path_output
         # self.search_radius = search_radius
 
-    def run(self, img_list, wht_list, flg_list, path_gaia, path_output, search_radius):
+    def run(self, img_list, wht_list, flg_list, search_radius):
 
+        path_gaia = self.dm.dir_pcref
+        path_output = self.dm.dir_l1
         # fn_list = [self.dm.l1_sci(ccd_id=_, suffix="img", ext="fits") for _ in self.dm.target_ccd_ids]
 
         print('preparing files for position calibration....')
@@ -447,7 +450,8 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         image_prefix = img_list[0][0].header['FILENAME'][0:-7]
         for i in range(0, len(img_list)):
             fn = img_list[i][0].header['FILENAME'] + '.acat'
-            if os.path.isfile(path_output + fn): os.remove(path_output + fn)
+            if os.path.isfile(path_output + fn):
+                os.remove(path_output + fn)
         if os.path.isfile(path_output + image_prefix + '.gaia.fits'):
             os.remove(path_output + image_prefix + '.gaia.fits')
         if os.path.isfile(path_output + image_prefix + '.gaialac.fits'):
