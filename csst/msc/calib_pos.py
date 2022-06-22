@@ -52,9 +52,9 @@ class CsstProcMscPositionCalibration(CsstProcessor):
             hdul_wht.append(wht_list[i][1])
             hdul_flg.append(flg_list[i][0])
             hdul_flg.append(flg_list[i][1])
-        hdul_img.writeto(self.dm.l1_hardcode("combined_img.fits"), overwrite=True)
-        hdul_wht.writeto(self.dm.l1_hardcode("combined_wht.fits"), overwrite=True)
-        hdul_flg.writeto(self.dm.l1_hardcode("combined_flg.fits"), overwrite=True)
+        hdul_img.writeto(self.dm.l1_hardcode(hdcd="combined_img.fits", comment="join_data"), overwrite=True)
+        hdul_wht.writeto(self.dm.l1_hardcode(hdcd="combined_wht.fits", comment="join_data"), overwrite=True)
+        hdul_flg.writeto(self.dm.l1_hardcode(hdcd="combined_flg.fits", comment="join_data"), overwrite=True)
 
         return
 
