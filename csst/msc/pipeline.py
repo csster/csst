@@ -64,14 +64,14 @@ CONFIG_CHAM = dict(
 CONFIG_PMO = dict(
     # test and working directory
     # dir_l0="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
-    dir_l0="/data/sim_data/new/MSC_0000100",
+    dir_l0="/data/sim_data/new/MSC_0000100",  # C5.2
     dir_l1="/home/user/L1Pipeline/msc/work/",
     # on PMO
     path_aux="/data/sim_data/MSC_0000100/ref/MSC_{}_*_{:02d}_combine.fits",
     # gaia catalog directory (for position calibration)
     dir_pcref="/home/user/L1Pipeline/msc/gaia_dr3/",
     # version of simulation data
-    ver_sim="C5.1",
+    ver_sim="C5.2",
     # only 18 cores available in cloud machine from PMO
     n_jobs=18,
     # shut down backend multithreading
@@ -205,7 +205,8 @@ if __name__ == "__main__":
 
     # process this exposure
     # do_one_exposure(runproc=(1, 1, 0, 0), **CONFIG_CHAM)
-    do_one_exposure(runproc=(0, 0, 1, 0), **CONFIG_CHAM)
+    # do_one_exposure(runproc=(0, 0, 1, 0), **CONFIG_CHAM)
+    do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_150s)
 
 
 

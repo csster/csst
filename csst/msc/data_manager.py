@@ -85,7 +85,7 @@ class CsstMscDataManager:
         """ glob files in L0 data directory """
         if ver_sim == "C3":
             pattern = os.path.join(dir_l0, "MSC_MS_*_raw.fits")
-        elif ver_sim == "C5.1":
+        elif ver_sim == ["C5.1", "C5.2"]:
             pattern = os.path.join(dir_l0, "CSST_MSC_MS_SCI_*.fits")
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
@@ -99,7 +99,7 @@ class CsstMscDataManager:
         """ glob input catalogs in L0 data directory """
         if ver_sim == "C3":
             pattern = os.path.join(dir_l0, "MSC_*.cat")
-        elif ver_sim == "C5.1":
+        elif ver_sim == ["C5.1", "C5.2"]:
             pattern = os.path.join(dir_l0, "MSC_*.cat")
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
