@@ -26,7 +26,9 @@ class CsstMscInstrumentProc(CsstProcessor):
         self.__wht = None
         self.__flg = None
 
-    def set_num_threads(self, n_threads=1):
+    @staticmethod
+    def set_num_threads(n_threads=1):
+        """ as suggested by Z.Xie """
         torch.set_num_threads(n_threads)
 
     def _do_fix(self, raw, bias, dark, flat):
@@ -177,7 +179,7 @@ class CsstMscInstrumentProc(CsstProcessor):
 
         print('finish the run and save the results back to CsstData')
 
-        # explicitly specify dtype
+        # make a deep copy explicitly specify dtype
         img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32))
         wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
         flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.uint16))
