@@ -64,8 +64,8 @@ CONFIG_CHAM = dict(
 CONFIG_PMO = dict(
     # test and working directory
     # dir_l0="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
-    dir_l0="/data/sim_data/new/MSC_0000100",  # C5.2
-    dir_l1="/home/user/L1Pipeline/msc/work/",
+    dir_l0="/data/sim_data/new/MSC_0000100",  # C5.2 new C5 simulation data
+    dir_l1="/home/user/L1Pipeline/msc/work_C5.2",
     # on PMO
     path_aux="/data/sim_data/MSC_0000100/ref/MSC_{}_*_{:02d}_combine.fits",
     # gaia catalog directory (for position calibration)
@@ -104,6 +104,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     if not os.path.exists(dir_l1):
         print("@pipeline: dir_l1 does not exist, making {}".format(dir_l1))
         os.mkdir(dir_l1)
+    print("@pipeline: cd {}".format(dir_l1))
     os.chdir(dir_l1)
 
     if runproc[0]:
@@ -174,8 +175,8 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     # Step 4. Photometry
     if runproc[3]:
         print("@pipeline: run photometry [4/4]")
-        fn_list = [os.path.basename(dm.l1_sci(ccd_id=_, suffix="img_L1", ext="fits")) for _ in dm.target_ccd_ids]
-        ptProc = CsstMscPhotometryProc()
+        # fn_list = [os.path.basename(dm.l1_sci(ccd_id=_, suffix="img_L1", ext="fits")) for _ in dm.target_ccd_ids]
+        ptProc = CsstMscPhotometryProc(dm)
         # ptProc.prepare()
         ptProc.run(n_jobs=n_jobs)
         # ptProc.cleanup()
