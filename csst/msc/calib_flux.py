@@ -569,6 +569,7 @@ class CsstProcFluxCalibration(CsstProcessor):
                 obs_uid[tmpj] = iid.nonzero()[0][iiid.nonzero()[0]][0]
 
             uidlim = d2d[obs_uid].arcsecond < 0.5  # set match radius=0.5 arcsec
+            print("uidlim.sum(): ", uidlim.sum())
             if uidlim.sum() > 0:
                 # csize=uidlim.sum()
                 obs_uidlim = obs_uid[uidlim]
@@ -608,6 +609,7 @@ class CsstProcFluxCalibration(CsstProcessor):
 
     def calib(self, this_ccd_id, addhead=False, morehead=True, plot=False, nodel=True, update=False, upcat=True):
 
+        print("@calib: ccd_id={}".format(this_ccd_id))
         # set directories in case of necessary
         refdir = self.dm.dir_l0
         wcsdir = L1dir = workdir = self.dm.dir_l1
@@ -838,6 +840,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         # ebv=getebv(image)
         ebv = 0.0
         ccdzp = coeff0[0]
+        print("CCDZP: ", ccdzp)
         mlim = self.getmlim(fwhm=fwhm, avsky=avsky, rdnoise=5.0, zpt=ccdzp, ebv=ebv, filter=band)
         mlim_com = 'magnitude limiting of 5-sigma galaxy detection'
         header.set('mlim', round(mlim, 2), mlim_com)
