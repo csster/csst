@@ -88,6 +88,7 @@ class CsstProcMscPositionCalibration(CsstProcessor):
         sex_comd2 = fp_img + ' -CATALOG_NAME ' + fp_cat
         sex_comd3 = ' -PARAMETERS_NAME ' + CONFIG_PATH + 'csst_realtime.param' + ' -FILTER_NAME ' \
                     + CONFIG_PATH + 'csst_realtime.conv' + ' -STARNNW_NAME ' + CONFIG_PATH + 'csst_realtime.nnw'
+                    # + " -GAIN 165"
         sex_comd = sex_comd1 + sex_comd2 + sex_comd3
         print(sex_comd)
         p = Popen(sex_comd, shell=True)
