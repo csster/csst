@@ -10,7 +10,6 @@ from csst.msc.inst_corr import CsstMscInstrumentProc
 from csst.msc.phot import CsstMscPhotometryProc
 from csst.msc.data_manager import CsstMscDataManager
 
-
 CONFIG_DANDELION = dict(
     # test and working directory
     dir_l0="/home/csstpipeline/L1Pipeline/msc/MSC_0000020",
@@ -27,10 +26,26 @@ CONFIG_DANDELION = dict(
     backend_multithreading=False
 )
 
+CONFIG_CHAM = dict(
+    # test and working directory
+    dir_l0="/data/L1Pipeline/msc/MSC_0000020",
+    dir_l1="{}/L1Pipeline/msc/work/".format(os.getenv("HOME")),
+    # on Dandelion
+    path_aux="/data/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
+    # gaia catalog directory (for position calibration)
+    dir_pcref="/data/L1Pipeline/msc/gaia_dr3/",
+    # version of simulation data
+    ver_sim="C3",
+    # only 18 cores available in cloud machine from PMO
+    n_jobs=18,
+    # shut down backend multithreading
+    backend_multithreading=False
+)
 
 CONFIG_PMO = dict(
     # test and working directory
-    dir_l0="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
+    # dir_l0="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
+    dir_l0="/data/sim_data/new/MSC_0000100",
     dir_l1="/home/user/L1Pipeline/msc/work/",
     # on PMO
     path_aux="/data/sim_data/MSC_0000100/ref/MSC_{}_*_{:02d}_combine.fits",
@@ -47,7 +62,6 @@ CONFIG_PMO = dict(
 
 def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux="", ccd_ids=None,
                     n_jobs=18, backend_multithreading=False, runproc=(1, 0, 0, 0), dumpfile="test.dump"):
-
     # currently C3 and C5.1 are tested
     try:
         assert ver_sim in VER_SIMS
@@ -117,76 +131,59 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     # Step 2. Calibrate Position
     if runproc[1]:
         print("@pipeline: run position calibration [2/4]")
-        pcProc = CsstProcMscPositionCalibration()
-        pcProc.prepare(dm, n_jobs=n_jobs)
+        pcProc = CsstProcMscPositionCalibration(dm, n_jobs=n_jobs)
+        # pcProc.prepare()
         pcProc.run(img_list, wht_list, flg_list)
-        pcProc.cleanup(img_list, dir_l1)
+        # pcProc.cleanup()
     else:
+        # this stage saves data to files, no need to dump variables
         print("@pipeline: skip position calibration [2/4]")
-
-    """
-    pcProc = CsstProcMscPositionCalibration()
-    pcProc.prepare(dm)
-    pcProc.run(2.0)
-    pcProc.cleanup()
-    
-    get these parameters from dm.l1_sci(*):
-    img_list, wht_list, flg_list, fn_list, dir_pcref, dir_l1
-    img_list, dir_l1
-    """
 
     # Step 3. Calibrate Flux
     if runproc[2]:
         print("@pipeline: run flux calibration [3/4]")
-        fcProc = CsstProcFluxCalibration()
+        fcProc = CsstProcFluxCalibration(dm)
         # fcProc.prepare()
-        fcProc.run(
-            fn_list, img_list, wht_list, flg_list, wcsdir=dir_l1, L1dir=dir_l1, workdir=dir_l1, refdir=dir_l0,
-            addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
-        fcProc.cleanup(fn_list, dir_l1)
+        fcProc.run(addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
+        # fcProc.cleanup(fn_list, dm.dir_l1)
     else:
         print("@pipeline: skip flux calibration [3/4]")
-
-    """
-    fcProc = CsstProcFluxCalibration()
-    fcProc.prepare(dm)
-    fcProc.run(addhead=True, morehead=False, plot=False, nodel=False, update=False, upcat=True)
-    fcProc.cleanup()
-    
-    get these parameters from dm.l1_sci(*):
-    fn_list, img_list, wht_list, flg_list, wcsdir=dir_l1, L1dir=dir_l1, workdir=dir_l1, refdir=dir_l0,
-    fn_list, dir_l1
-    """
 
     # Step 4. Photometry
     if runproc[3]:
         print("@pipeline: run photometry [4/4]")
+        fn_list = [os.path.basename(dm.l1_sci(ccd_id=_, suffix="img_L1", ext="fits")) for _ in dm.target_ccd_ids]
         ptProc = CsstMscPhotometryProc()
-        ptProc.prepare()
-        ptProc.run(fn_list, out_dir=dir_l1, n_jobs=n_jobs)
-        ptProc.cleanup()
+        # ptProc.prepare()
+        ptProc.run(n_jobs=n_jobs)
+        # ptProc.cleanup()
     else:
         print("@pipeline: skip photometry [4/4]")
 
-    return
+    # print("@pipeline: dump DM object to dm.dump ...")
+    # joblib.dump(dm, "dm.dump")
+
+    return dm
 
 
 if __name__ == "__main__":
     # identify where you are
     HOSTNAME = os.uname()[1]
     # you have to run this pipeline in some well-defined servers
-    assert HOSTNAME in ["ubuntu", "Dandelion"]
+    assert HOSTNAME in ["ubuntu", "dandelion"]
     # get config parameters
-    if HOSTNAME == "ubuntu":
-        config = CONFIG_PMO
-    elif HOSTNAME == "Dandelion":
-        config = CONFIG_DANDELION
-    else:
-        raise ValueError("HOSTNAME {} not known!".format(HOSTNAME))
+    # if HOSTNAME == "ubuntu":
+    #     config = CONFIG_PMO
+    # elif HOSTNAME == "Dandelion":
+    #     config = CONFIG_DANDELION
+    # else:
+    #     raise ValueError("HOSTNAME {} not known!".format(HOSTNAME))
+    # for k, v in config.items():
+    #     eval("{}=config[\"{}\"]".format(k, k))
 
     # process this exposure
-    do_one_exposure(runproc=(1, 1, 0, 0), **config)
+    # do_one_exposure(runproc=(1, 1, 0, 0), **CONFIG_CHAM)
+    do_one_exposure(runproc=(0, 0, 1, 0), **CONFIG_CHAM)
 
-    for k, v in config.items():
-        eval("{}=config[\"{}\"]".format(k, k))
+
 
