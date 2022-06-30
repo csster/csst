@@ -1,5 +1,5 @@
 import os
 
-__version__ = "0.0.6"
+__version__ = "0.1.0"
 
 PACKAGE_PATH = os.path.dirname(__file__)
