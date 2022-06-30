@@ -29,5 +29,5 @@ class CsstMscPhotometryProc(CsstProcessor):
 
     def run(self, n_jobs=1, verbose=5):
         joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
-            joblib.delayed(do_phot)(ccd_id) for ccd_id in self.dm.target_ccd_ids)
+            joblib.delayed(do_phot)(ccd_id, self.dm) for ccd_id in self.dm.target_ccd_ids)
         return

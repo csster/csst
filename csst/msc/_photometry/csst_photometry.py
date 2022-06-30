@@ -872,7 +872,7 @@ def do_phot(ccd_id, dm, stage=None, ):
                 f[1].header['PHOTTIME'] = (phottime, 'seconds')
                 f.flush(output_verify='fix+warn')
                 f.close()
-    print('Total time for ccd_id=' + ccd_id + ': ', time2 - time0)
+    print('Total time for ccd_id={}: {}'.format(ccd_id, time2 - time0))
 
 
 def phot_main():
