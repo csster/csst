@@ -64,7 +64,7 @@ class CsstMscDataManager:
             self.available_ccd_ids = [int(re.split(r"[_.]", fp)[4]) for fp in fps_img]
             self.available_ccd_ids.sort()
 
-        elif ver_sim == "C5.1":
+        elif ver_sim == ["C5.1", "C5.2"]:
             # get info
             # print(re.split(r"[_.]", fps[0]))
             self._telescope, self._instrument, self._survey, self._imagetype, \
