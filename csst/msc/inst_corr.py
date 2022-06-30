@@ -179,9 +179,12 @@ class CsstMscInstrumentProc(CsstProcessor):
         print('finish the run and save the results back to CsstData')
 
         # make a deep copy explicitly specify dtype
-        img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32)/exptime)
+        img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32)*gain/exptime)
+        img[1].header['BUNIT'] = 'e/s'
         wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
+        wht[1].header.remove('BUNIT')
         flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.uint16))
+        flg[1].header.remove('BUNIT')
 
         # output names are determined via simulation version
         assert ver_sim in VER_SIMS
