@@ -3,11 +3,11 @@
 # v1.1.2 first version of csst photometry pipeline based on sextractor
 # v1.2.0 change weight and flag names due to the CSST naming
 #        add FLAGS_ISO to remove flagged objects in PSFEx
-# v1.2.1 change gain to exposure time 
-#        add options of output images 
+# v1.2.1 change gain to exposure time
+#        add options of output images
 #        change catalog columns to the defined L2 data format
-#        change config directory 
-# v1.2.2 add pick_psfstars, select PSF stars 
+#        change config directory
+# v1.2.2 add pick_psfstars, select PSF stars
 #        add photometry types: PSF or MODEL
 # v1.2.3 add computing time
 # v1.2.4 bug in pick_psfstars with missing max_elp
@@ -128,12 +128,12 @@ def closest_match(coord1, coord2, min_dist=1.0):
     return index1, index2
 
 
-# def get_psf1(fitsfile, outdir=None, psf_size=71, degree=3, variability=0.3, fwhm_range=[1.5, 20.0], max_elp=0.3,
+# def get_psf1(fp_img, outdir=None, psf_size=71, degree=3, variability=0.3, fwhm_range=[1.5, 20.0], max_elp=0.3,
 #              sampling=0, nthread=1, min_sn=20, detect_thresh=5.0, detect_minarea=3):
 #     """
 #     get PSF profile for a specified image
 #     INPUT
-#         fitsfile: input image
+#         fp_img: input image
 #         outdir: output directory
 #         psf_size: size of the PSF image
 #         degree: order of spatially varied PSF
@@ -146,7 +146,7 @@ def closest_match(coord1, coord2, min_dist=1.0):
 #         detect_thresh: threshold for detections
 #         detect_minarea: min pixel area for detections
 #     """
-#     fitsname, _ = os.path.splitext(fitsfile)
+#     fitsname, _ = os.path.splitext(fp_img)
 #     if outdir is not None:
 #         if not os.path.exists(outdir):
 #             os.mkdir(outdir)
@@ -162,18 +162,18 @@ def closest_match(coord1, coord2, min_dist=1.0):
 #     pexfile = os.path.join(CONFIG_PATH, 'csst.psfex')
 #     psffile = fitsname + '_psf.fits'
 #
-#     # head=fits.getheader(fitsfile)
+#     # head=fits.getheader(fp_img)
 #     # date=head['date-obs']
 #     # ccd=head['ccd_no']
 #     # flagfile,weightfile=get_flagweight(date,ccd)
-#     rootname, _ = os.path.splitext(fitsfile)
+#     rootname, _ = os.path.splitext(fp_img)
 #     indpos = str.rfind(rootname, '_img')
 #     flagfile = rootname[:indpos] + '_flg.fits'
 #     weightfile = rootname[:indpos] + '_wht.fits'
-#     head = fits.getheader(fitsfile, 0)
+#     head = fits.getheader(fp_img, 0)
 #     gain = head['exptime']
 #
-#     command = 'sex ' + fitsfile + ' -c ' + sexfile + ' -CATALOG_NAME ' + psffile + ' -FILTER_NAME ' + covfile + \
+#     command = 'sex ' + fp_img + ' -c ' + sexfile + ' -CATALOG_NAME ' + psffile + ' -FILTER_NAME ' + covfile + \
 #               ' -STARNNW_NAME ' + nnwfile + ' -PARAMETERS_NAME ' + parfile + ' -WEIGHT_IMAGE ' + weightfile + \
 #               ' -FLAG_IMAGE ' + flagfile + ' -NTHREADS ' + str(nthread) + ' -DETECT_MINAREA ' + str(detect_minarea) + \
 #               ' -DETECT_THRESH ' + str(detect_thresh) + ' -GAIN ' + str(gain)
@@ -245,14 +245,14 @@ def pick_psfstars(psffile, remove_polution=False, min_nstar=10, max_nstar=1500, 
 #		f.write('%7.2f %7.2f\n' % (cat['XWIN_IMAGE'][i],cat['YWIN_IMAGE'][i]))
 #	f.close()
 
-def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm_range=[2.0, 20.0], max_elp=0.3,
+def get_psf(ccd_id, dm, psf_size=101, degree=2, variability=0.3, fwhm_range=[2.0, 20.0], max_elp=0.3,
             sampling=0, min_sn=20.0, detect_thresh=5.0, detect_minarea=5, seeing=0.15, pixel_scale=0.075,
             filter_name='gauss_4.0_7x7.conv', phot_aper=10.0, back_size='400,400', check_plots=False, nthread=1, **kwd):
     # ,save_starpos=False
     """
     get PSF profile for a specified image
     INPUT
-        fitsfile: input image
+        fp_img: input image
         outdir: output directory
         psf_size: size of the PSF image
         degree: order of spatially varied PSF
@@ -277,54 +277,60 @@ def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm
     if which("sex") is None or which("psfex") is None:
         raise OSError('No sex or psfex SHELL command found! Please install')
 
-    rootname, _ = os.path.splitext(fitsfile)
-    # indpos = str.rfind(rootname, '_img')
-    # flagfile = rootname[:indpos] + '_flg.fits'
-    # weightfile = rootname[:indpos] + '_wht.fits'
-    flagfile = fitsfile.replace("_img", "_flg")
-    weightfile = fitsfile.replace("_img", "_wht")
+    # rootname, _ = os.path.splitext(fp_img)
+    # # indpos = str.rfind(rootname, '_img')
+    # # flagfile = rootname[:indpos] + '_flg.fits'
+    # # weightfile = rootname[:indpos] + '_wht.fits'
+    # flagfile = fp_img.replace("_img", "_flg")
+    # weightfile = fp_img.replace("_img", "_wht")
 
-    head = fits.getheader(fitsfile, 0)
+    fp_img = dm.l1_sci(ccd_id=ccd_id, suffix="img_L1", ext="fits")
+    fp_wht = dm.l1_sci(ccd_id=ccd_id, suffix="wht_L1", ext="fits")
+    fp_flg = dm.l1_sci(ccd_id=ccd_id, suffix="flg_L1", ext="fits")
+    fp_psf = dm.l1_sci(ccd_id=ccd_id, suffix="psf", ext="fits")
+    fp_cat = dm.l1_sci(ccd_id=ccd_id, suffix="cat", ext="fits")
+
+    head = fits.getheader(fp_img, 0)
     gain = head['exptime']
     saturate = 50000.0 / gain
 
-    # fitsname,_=os.path.splitext(fitsfile)
-    if outdir is not None:
-        # _, filename = os.path.split(rootname[:indpos])
-        # fitsname = os.path.join(outdir, filename)
-        fitsname = os.path.join(outdir, os.path.basename(fitsfile))
+    # fitsname,_=os.path.splitext(fp_img)
+    # if outdir is not None:
+    #     # _, filename = os.path.split(rootname[:indpos])
+    #     # fitsname = os.path.join(outdir, filename)
+    #     fitsname = os.path.join(outdir, os.path.basename(fp_img))
 
     sexfile = os.path.join(CONFIG_PATH, 'csst_psfex.sex')
     covfile = os.path.join(CONFIG_PATH, filter_name)
     nnwfile = os.path.join(CONFIG_PATH, 'default.nnw')
     parfile = os.path.join(CONFIG_PATH, 'csst_psfex.param')
     pexfile = os.path.join(CONFIG_PATH, 'csst.psfex')
-    psffile = fitsname + '_psf.fits'
+    # fp_psf = fitsname + '_psf.fits'
 
-    command = 'sex ' + fitsfile + ' -c ' + sexfile + ' -CATALOG_NAME ' + psffile + ' -PARAMETERS_NAME ' + parfile + ' -DETECT_MINAREA ' + str(
-        detect_minarea) + ' -DETECT_THRESH ' + str(
-        detect_thresh) + ' -FILTER_NAME ' + covfile + ' -WEIGHT_IMAGE ' + weightfile + ' -FLAG_IMAGE ' + flagfile + ' -PHOT_APERTURES ' + str(
-        phot_aper) + ' -GAIN ' + str(gain) + ' -PIXEL_SCALE ' + str(pixel_scale) + ' -SEEING_FWHM ' + str(
-        seeing) + ' -SATUR_LEVEL ' + str(
-        saturate) + ' -STARNNW_NAME ' + nnwfile + ' -BACK_SIZE ' + back_size + ' -NTHREADS ' + str(nthread)
+    command = 'sex ' + fp_img + ' -c ' + sexfile + ' -CATALOG_NAME ' + fp_psf + ' -PARAMETERS_NAME ' + parfile + \
+              ' -DETECT_MINAREA ' + str(detect_minarea) + ' -DETECT_THRESH ' + str(detect_thresh) +\
+              ' -FILTER_NAME ' + covfile + ' -WEIGHT_IMAGE ' + fp_wht + ' -FLAG_IMAGE ' + fp_flg + \
+              ' -PHOT_APERTURES ' + str(phot_aper) + ' -GAIN ' + str(gain) + ' -PIXEL_SCALE ' + str(pixel_scale) + \
+              ' -SEEING_FWHM ' + str(seeing) + ' -SATUR_LEVEL ' + str(saturate) + ' -STARNNW_NAME ' + nnwfile + \
+              ' -BACK_SIZE ' + back_size + ' -NTHREADS ' + str(nthread)
     print(command)
     os.system(command)
 
-    pickflag = pick_psfstars(psffile, min_sn=20, **kwd)
+    pickflag = pick_psfstars(fp_psf, min_sn=20, **kwd)
     if pickflag is False:
-        if os.path.isfile(psffile): os.remove(psffile)
+        if os.path.isfile(fp_psf): os.remove(fp_psf)
         return False
 
     if not check_plots:
-        command = 'psfex ' + psffile + ' -c ' + pexfile + ' -PSF_SIZE ' + str(psf_size) + ',' + str(
+        command = 'psfex ' + fp_psf + ' -c ' + pexfile + ' -PSF_SIZE ' + str(psf_size) + ',' + str(
             psf_size) + ' -SAMPLE_MINSN ' + str(
             min_sn) + ' -CHECKPLOT_DEV NULL -CHECKPLOT_TYPE NONE -CHECKIMAGE_TYPE NONE -PSFVAR_DEGREES ' + str(
             degree) + ' -SAMPLE_VARIABILITY ' + str(variability) + ' -SAMPLE_FWHMRANGE ' + str(
             fwhm_range[0]) + ',' + str(fwhm_range[1]) + ' -PSF_SAMPLING ' + str(sampling) + ' -SAMPLE_MAXELLIP ' + str(
             max_elp) + ' -NTHREADS ' + str(nthread)
     else:
-        checknames = fitsname + '_psffwhm.png,' + fitsname + '_psfelp.png'
-        command = 'psfex ' + psffile + ' -c ' + pexfile + ' -PSF_SIZE ' + str(psf_size) + ',' + str(
+        checknames = fp_img + '_psffwhm.png,' + fp_img + '_psfelp.png'
+        command = 'psfex ' + fp_psf + ' -c ' + pexfile + ' -PSF_SIZE ' + str(psf_size) + ',' + str(
             psf_size) + ' -SAMPLE_MINSN ' + str(min_sn) + ' -PSFVAR_DEGREES ' + str(
             degree) + ' -SAMPLE_VARIABILITY ' + str(variability) + ' -SAMPLE_FWHMRANGE ' + str(
             fwhm_range[0]) + ',' + str(fwhm_range[1]) + ' -PSF_SAMPLING ' + str(sampling) + ' -SAMPLE_MAXELLIP ' + str(
@@ -335,13 +341,13 @@ def get_psf(fitsfile, outdir=None, psf_size=101, degree=2, variability=0.3, fwhm
     return True
 
 
-def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nthread=1, head_zpt=None,
+def photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nthread=1, head_zpt=None,
                checkfiles=['sky', 'seg', 'res', 'mod'], aper_cor=True, seeing=0.15, pixel_scale=0.075,
                phot_type='model'):
     """
     perform aperture and model photometry
     INPUT:
-    fitsfile: input image
+    fp_img: input image
     outdir: output directory
     detect_thresh: detecting threshold
     analysis_thresh: analysis threshold
@@ -353,21 +359,26 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
 	pixel_scale: pixel scale in arcsec
     phot_type: providing the photometry type, if psf, only perform aperture + psf photometry; if model, perform aperture+psf+model photometry
 
-    checkfiles: check types 
+    checkfiles: check types
         sky: BACKGROUND
         seg: SEGMENTATION
         res: -MODEL
         mod: MODEL
     """
 
-    fitsname, _ = os.path.splitext(fitsfile)
-    indpos = str.rfind(fitsname, '_img')
-    fitsname = fitsname[:indpos]
-    if outdir is not None:
-        if not os.path.exists(outdir):
-            os.mkdir(outdir)
-        _, rootname = os.path.split(fitsname)
-        fitsname = os.path.join(outdir, rootname)
+    # fitsname, _ = os.path.splitext(fp_img)
+    # indpos = str.rfind(fitsname, '_img')
+    # fitsname = fitsname[:indpos]
+    # if outdir is not None:
+    #     if not os.path.exists(outdir):
+    #         os.mkdir(outdir)
+    #     _, rootname = os.path.split(fitsname)
+    #     fitsname = os.path.join(outdir, rootname)
+    fp_img = dm.l1_sci(ccd_id=ccd_id, suffix="img_L1", ext="fits")
+    fp_wht = dm.l1_sci(ccd_id=ccd_id, suffix="wht_L1", ext="fits")
+    fp_flg = dm.l1_sci(ccd_id=ccd_id, suffix="flg_L1", ext="fits")
+    fp_psf = dm.l1_sci(ccd_id=ccd_id, suffix="psf", ext="fits")
+    fp_cat = dm.l1_sci(ccd_id=ccd_id, suffix="cat", ext="fits")
 
     sexfile = os.path.join(CONFIG_PATH, 'csst_phot.sex')
     covfile = os.path.join(CONFIG_PATH, 'default.conv')
@@ -376,9 +387,9 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
         parfile = os.path.join(CONFIG_PATH, 'csst_psfphot.params')
     else:
         parfile = os.path.join(CONFIG_PATH, 'csst_modphot.params')
-    psffile = fitsname + '_psf.fits'
-    head = fits.getheader(fitsfile, 0)
-    head1 = fits.getheader(fitsfile, 1)
+    # fp_psf = fp_img + '_psf.fits'
+    head = fits.getheader(fp_img, 0)
+    head1 = fits.getheader(fp_img, 1)
     if 'CCDZP' not in head1:
         print("No zeropoint in the header")
         return False
@@ -388,17 +399,17 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
     # get flag and weight images
     # flagfile,weightfile=get_flagweght(date,ccd)
 
-    # rootname, _ = os.path.splitext(fitsfile)
+    # rootname, _ = os.path.splitext(fp_img)
     # indpos = str.rfind(rootname, '_img')
     # flagfile = rootname[:indpos] + '_flg.fits'
     # weightfile = rootname[:indpos] + '_wht.fits'
-    flagfile = fitsfile.replace("_img", "_flg")
-    weightfile = fitsfile.replace("_img", "_wht")
+    # fp_flg = fp_img.replace("_img", "_flg")
+    # fp_wht = fp_img.replace("_img", "_wht")
 
     gain = head['exptime']
 
     types = {'sky': 'BACKGROUND', 'seg': 'SEGMENTATION', 'mod': 'MODELS', 'res': '-MODELS'}
-    catfile = fitsname + '_fluxadu.fits'
+    fp_cat = dm.l1_sci(ccd_id, suffix="fluxadu", ext="fits")
     if checkfiles is None:
         checktype = "NONE"
         checknames = "check.fits"
@@ -410,22 +421,22 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
         for i in range(ntypes):
             ikey = checkfiles[i]
             checktype += types[ikey] + " "
-            checknames += fitsname + "_" + ikey + ".fits "
+            checknames += dm.l1_sci(ccd_id, suffix=ikey, ext="fits") + " "# fp_img + "_" + ikey + ".fits "
         checktype += "'"
         checknames += "'"
 
     # checktype="'BACKGROUND -MODELS MODELS -PSFS PSFS'"
     # checknames='"'+fitsname+'-bkg.fits '+fitsname+'-submodel.fits '+fitsname+'-model.fits '+fitsname+'-subpsf.fits '+fitsname+'-psf.fits '+'"'
-    command = 'sex ' + fitsfile + ' -c ' + sexfile + ' -CATALOG_NAME ' + catfile + ' -FILTER_NAME ' + covfile + ' -STARNNW_NAME ' + nnwfile + ' -DETECT_THRESH ' + str(
+    command = 'sex ' + fp_img + ' -c ' + sexfile + ' -CATALOG_NAME ' + fp_cat + ' -FILTER_NAME ' + covfile + ' -STARNNW_NAME ' + nnwfile + ' -DETECT_THRESH ' + str(
         detect_thresh) + ' -ANALYSIS_THRESH ' + str(
-        analysis_thresh) + ' -CLEAN ' + clean + ' -WEIGHT_IMAGE ' + weightfile + ' -FLAG_IMAGE ' + flagfile + ' -PIXEL_SCALE ' + str(
+        analysis_thresh) + ' -CLEAN ' + clean + ' -WEIGHT_IMAGE ' + fp_wht + ' -FLAG_IMAGE ' + fp_flg + ' -PIXEL_SCALE ' + str(
         pixel_scale) + ' -SEEING_FWHM ' + str(seeing) + ' -GAIN ' + str(
-        gain) + ' -PARAMETERS_NAME ' + parfile + ' -CHECKIMAGE_TYPE ' + checktype + ' -CHECKIMAGE_NAME ' + checknames + ' -PSF_NAME ' + psffile + ' -NTHREADS ' + str(
+        gain) + ' -PARAMETERS_NAME ' + parfile + ' -CHECKIMAGE_TYPE ' + checktype + ' -CHECKIMAGE_NAME ' + checknames + ' -PSF_NAME ' + fp_psf + ' -NTHREADS ' + str(
         nthread)
     print(command)
     os.system(command)
 
-    fluxadu = Table.read(catfile)
+    fluxadu = Table.read(fp_cat)
     # calibrate flux and aperture corrections
     fluxcalib = calibrate_fluxadu(fluxadu, head1, head_zpt=head_zpt)
     # plotname=fitsname
@@ -435,7 +446,8 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
         fluxcor = magnitude_correction(fluxcalib, head1, elp_lim=0.5, sigma=2.5, plot_name=plotname, magerr_lim=0.1,
                                        sig_limit=0.08, aper_size=[3, 4, 5, 6, 8, 10, 13, 16, 20, 25, 30, 40],
                                        aper_ref=5, class_lim=0.5)
-        corfile = fitsname + '_cat.fits'
+        # corfile = fp_img + '_cat.fits'
+        corfile = dm.l1_sci(ccd_id, suffix="cat", ext="fits")
         fluxcor.write(corfile, format='fits', overwrite=True)
         ind_head1 = head1.index('NAXIS2') + 1
         ind_head = head.index('NEXTEND') + 1
@@ -444,8 +456,8 @@ def photometry(fitsfile, outdir=None, detect_thresh=1.0, analysis_thresh=1.0, cl
         f[1].header.extend(head1.cards[ind_head1:], bottom=True)
         f.flush(output_verify='fix+warn')
         f.close()
-    if os.path.isfile(catfile):
-        os.remove(catfile)
+    # if os.path.isfile(fp_cat):
+    #     os.remove(fp_cat)
 
 
 def calibrate_fluxadu(fluxadu, head, head_zpt=None):
@@ -821,31 +833,24 @@ def match_ps1(sexcat, ps1cat, outcat=None):
 
 
 #
-def do_phot(fitsfile, outdir=None, psffile=None, catfile=None, stage=None, ):
+def do_phot(ccd_id, dm, stage=None, ):
     """
     get PSF and do photometry
     ifits: fits image
     outdir: output directory
     stage: psf or phot to run only get_psf or photometry
     """
-    fitsname, _ = os.path.splitext(fitsfile)
-    indpos = str.rfind(fitsname, '_img')
-    fitsname = fitsname[:indpos]
-    if outdir is not None:
-        if not os.path.exists(outdir):
-            os.mkdir(outdir)
-        _, rootname = os.path.split(fitsname)
-        fitsname = os.path.join(outdir, rootname)
+
+    fp_psf = dm.l1_sci(ccd_id, suffix="psf", ext="fits")
+    fp_cat = dm.l1_sci(ccd_id, suffix="cat", ext="fits")
 
     # get psfex
     time0 = time.time()
-    psffile = fitsname + '_psf.fits' if psffile is None else psffile
-    catfile = fitsname + '_cat.fits' if catfile is None else catfile
 
     time1 = time0
-    if (stage is None or stage == 'psf') and (not os.path.isfile(psffile)):
-        # get_psf(fitsfile,outdir=outdir,psf_size=71,degree=3,variability=0.3,fwhm_range=[1.5,20.0],max_elp=0.3,sampling=0,min_sn=10.0,detect_thresh=5.0,detect_minarea=5,back_size='400,400',check_plots=False,nthread=0,remove_polution=True,min_nstar=15,max_nstar=1500,class_star=0.7,match_dist=3.0,min_separation=20)
-        get_psf(fitsfile, outdir=outdir, psf_size=71, degree=3, variability=0.3, fwhm_range=[1.5, 20.0], max_elp=0.3,
+    if stage is None or stage == 'psf':
+        # get_psf(fp_img,outdir=outdir,psf_size=71,degree=3,variability=0.3,fwhm_range=[1.5,20.0],max_elp=0.3,sampling=0,min_sn=10.0,detect_thresh=5.0,detect_minarea=5,back_size='400,400',check_plots=False,nthread=0,remove_polution=True,min_nstar=15,max_nstar=1500,class_star=0.7,match_dist=3.0,min_separation=20)
+        get_psf(ccd_id, dm, psf_size=71, degree=3, variability=0.3, fwhm_range=[1.5, 20.0], max_elp=0.3,
                 sampling=0, min_sn=5.0, detect_thresh=5.0, detect_minarea=5, back_size='400,400', check_plots=False,
                 nthread=0, remove_polution=True, min_nstar=9, max_nstar=1500, class_star=0.7, match_dist=3.0,
                 min_separation=20)
@@ -853,21 +858,21 @@ def do_phot(fitsfile, outdir=None, psffile=None, catfile=None, stage=None, ):
         psftime = time1 - time0
     time2 = time1
     if stage is None or stage == 'phot':
-        if not os.path.isfile(psffile):
+        if not os.path.isfile(fp_psf):
             print("PSF file not exist!")
         else:
-            photometry(fitsfile, outdir=outdir, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', head_zpt=None,
+            photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', head_zpt=None,
                        checkfiles=['sky', 'seg'], nthread=0, phot_type='model')
             time2 = time.time()
             phottime = time2 - time1
-            if os.path.isfile(catfile):
-                f = fits.open(catfile, mode='update')
+            if os.path.isfile(fp_cat):
+                f = fits.open(fp_cat, mode='update')
                 if 'psftime' in vars().keys():
                     f[1].header['PSFTIME'] = (psftime, 'seconds')
                 f[1].header['PHOTTIME'] = (phottime, 'seconds')
                 f.flush(output_verify='fix+warn')
                 f.close()
-    print('Total time for ' + fitsfile + ': ', time2 - time0)
+    print('Total time for ccd_id=' + ccd_id + ': ', time2 - time0)
 
 
 def phot_main():
