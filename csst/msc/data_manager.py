@@ -174,7 +174,7 @@ class CsstMscDataManager:
             fn = "{}_{}_{}_{}_{:02d}_{}.{}".format(
                 self._instrument, self._survey,
                 self._exp_start, self._exp_id, ccd_id, suffix, ext)
-        elif self.ver_sim == "C5.1":
+        elif self.ver_sim in ["C5.1", "C5.2"]:
             fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_{}.{}".format(
                 self._telescope, self._instrument, self._survey,
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id, suffix, ext)

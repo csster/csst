@@ -207,7 +207,16 @@ if __name__ == "__main__":
     # process this exposure
     # do_one_exposure(runproc=(1, 1, 0, 0), **CONFIG_CHAM)
     # do_one_exposure(runproc=(0, 0, 1, 0), **CONFIG_CHAM)
+
+    # on Dandelion, test another C3 data
+    from csst.msc.pipeline import do_one_exposure, CONFIG_150s
+    print(CONFIG_150s)
     do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_150s)
+
+    # on PMO, test new C5.2 data
+    from csst.msc.pipeline import do_one_exposure, CONFIG_PMO
+    print(CONFIG_PMO)
+    do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_PMO)
 
 
 
