@@ -15,11 +15,17 @@ from astropy.wcs import WCS
 
 from .. import PACKAGE_PATH
 from ..core.processor import CsstProcessor
+from .data_manager import CsstMscDataManager
 
 CONFIG_PATH = PACKAGE_PATH + "/msc/pos_calib_config/"
 
 
 class CsstProcMscPositionCalibration(CsstProcessor):
+
+    def __init__(self, dm: CsstMscDataManager, n_jobs: int = -1):
+        super().__init__()
+        self.dm = dm
+        self.n_jobs = n_jobs
 
     def join_data(self, img_list, wht_list, flg_list):
         """
@@ -408,9 +414,10 @@ class CsstProcMscPositionCalibration(CsstProcessor):
 
         return
 
-    def prepare(self, dm, n_jobs=-1): #, path_gaia, path_output, search_radius=2.0):
-        self.dm = dm
-        self.n_jobs = n_jobs
+    def prepare(self): #, path_gaia, path_output, search_radius=2.0):
+        pass
+        # self.dm = dm
+        # self.n_jobs = n_jobs
         # self.path_gaia = dm.dir_pcref
         # self.path_output = path_output
         # self.search_radius = search_radius
