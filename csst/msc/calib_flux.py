@@ -741,7 +741,6 @@ class CsstProcFluxCalibration(CsstProcessor):
             imcheck.close()
             # return
             # coeff0, cstd, csize, cobsm, crefm, ccdraoff, ccddecoff, fwhm
-            header[""]
 
         coeff1 = self.match_calib(obsc[im1], refc[ref1], obsm[im1], refm[ref1], obsme[im1], refme[ref1], obsflags[im1])
         coeff2 = self.match_calib(obsc[im2], refc[ref2], obsm[im2], refm[ref2], obsme[im2], refme[ref2], obsflags[im2])
