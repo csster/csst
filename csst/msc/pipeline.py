@@ -29,12 +29,12 @@ CONFIG_DANDELION = dict(
 
 CONFIG_150s = dict(
     # test and working directory
-    dir_l0="/home/csstpipeline/L1Pipeline/msc/150s",
-    dir_l1="/home/csstpipeline/L1Pipeline/msc/150work/",
+    dir_l0="/data/L1Pipeline/msc/150s",
+    dir_l1="{}/L1Pipeline/msc/work_150s/".format(os.getenv("HOME")),
     # on Dandelion
-    path_aux="/home/csstpipeline/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
+    path_aux="/data/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
     # gaia catalog directory (for position calibration)
-    dir_pcref="/home/csstpipeline/L1Pipeline/msc/gaia_dr3/",
+    dir_pcref="/data/L1Pipeline/msc/gaia_dr3/",
     # version of simulation data
     ver_sim="C3",
     # only 18 cores available in cloud machine from PMO
@@ -101,6 +101,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
 
     # Step 1. Correct instrumental effect
     if not os.path.exists(dir_l1):
+        print("@pipeline: dir_l1 does not exist, making {}".format(dir_l1))
         os.mkdir(dir_l1)
     os.chdir(dir_l1)
 
