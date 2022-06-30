@@ -33,9 +33,9 @@ setuptools.setup(
                            "msc/flux_calib_config/*",
                            "msc/phot_config/*",
                            ]},
-    # install_requires=['sphinx>=4.2.0',
-    #                   'numpy>=1.22.0',
+    # install_requires=['sphinx',
+    #                   'numpy',
     #                   'scipy', 'matplotlib',
-    #                   'astropy', 'healpy', 'ccdproc', 'deepCR'],
+    #                   'astropy', 'healpy', 'ccdproc', 'deepCR', 'photutils'],
     python_requires='>=3.7',
 )

@@ -164,7 +164,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         self.__wht = np.zeros_like(raw[1].data, dtype=np.float32)
         self.__flg = np.zeros_like(raw[1].data, dtype=np.uint16)
 
-        exptime = raw[1].header["exptime"]
+        exptime = raw[0].header["EXPTIME"]
         gain = raw[1].header["GAIN1"]
         rdnoise = raw[1].header["RDNOISE1"]
 
