@@ -14,6 +14,7 @@ from astropy.wcs.utils import proj_plane_pixel_scales
 
 from .. import PACKAGE_PATH
 from ..core.processor import CsstProcessor
+from .data_manager import CsstMscDataManager
 
 # Edited on Jun. 17, 2016
 # add color term
@@ -22,8 +23,9 @@ __author__ = 'ZZM'
 
 class CsstProcFluxCalibration(CsstProcessor):
 
-    def __init__(self, **kwargs):
+    def __init__(self, dm : CsstMscDataManager, **kwargs):
         super().__init__(**kwargs)
+        self.dm = dm
 
     def ps1_mags(self, cat, band, obs_region):
         # get ps1 color-corrected magnitude for specific filter
@@ -181,7 +183,11 @@ class CsstProcFluxCalibration(CsstProcessor):
         cat = os.path.join(refdir, catname)
         data = table.Table.read(cat, format='ascii')
         data.write(outcat, format='fits', overwrite=True)
+        return data
 
+    def read_inputcat_(self, ccd_id):
+        cat = self.dm.l0_cat(ccd_id)
+        data = table.Table.read(cat, format='ascii')
         return data
 
     def input_mags(self, cat, usepixcood=False):
@@ -208,9 +214,10 @@ class CsstProcFluxCalibration(CsstProcessor):
         return mags, magerr, brmedian, refc
 
     def rewrite_sex_cat(self, cat, workdir=''):
+        """ split combined_acat.fits """
         data = fits.open(cat)
-        if workdir == '':
-            workdir = os.path.split(cat)[0]
+        # if workdir == '':
+        #     workdir = os.path.split(cat)[0]
         index = []
         if (np.size(data) % 3 == 0) & (np.size(data) != 0):
             for i in range(int(np.size(data) / 3)):
@@ -224,6 +231,31 @@ class CsstProcFluxCalibration(CsstProcessor):
                     hdu.writeto(subfile, overwrite=True)
                 index.append(filename)
         return index
+
+    def rewrite_sex_cat_(self, cat):
+        """ split combined_acat.fits into {ccd_id}_img.acat """
+        data = fits.open(cat)
+        nhdu = len(data)
+        # if workdir == '':
+        #     workdir = os.path.split(cat)[0]
+        print("@rewrite_sex_cat_: {} ({} HDUs)...".format(cat, nhdu))
+        # index = []
+        # if (np.size(data) % 3 == 0) & (np.size(data) != 0):
+        #     for i in range(int(np.size(data) / 3)):
+        #         # print(i)
+        #         hdr = data[3 * i + 1].data
+        #         filename = str(hdr)[str(hdr).rfind('FITSFILE') + 11:
+        #                             str(hdr).rfind(".fits' / File name of the analyse")]
+        #         subfile = os.path.join(workdir, filename + '.acat')
+        #         if not os.path.exists(subfile):
+        #             hdu = fits.HDUList([data[0], data[3 * i + 1], data[3 * i + 2]])
+        #             hdu.writeto(subfile, overwrite=True)
+        #         index.append(filename)
+        # return index
+        for i, ccd_id in enumerate(self.dm.target_ccd_ids):
+            hdu = fits.HDUList([data[0], data[3 * i + 1], data[3 * i + 2]])
+            hdu.writeto(self.dm.l1_sci(ccd_id, suffix="img", ext="acat"), overwrite=False)
+        return
 
     def split_wcs_head(self, wcshead, im_index=[], workdir=''):
         if len(im_index) == 0:
@@ -241,6 +273,25 @@ class CsstProcFluxCalibration(CsstProcessor):
             wheader = head[i].header
             prihdu = fits.PrimaryHDU(header=wheader)
             prihdu.writeto(headname, overwrite=True)
+
+    def split_wcs_head_(self, wcshead):
+        """ split combined_acat.head.fits into {ccd_id}_whead.fits """
+        head = fits.open(wcshead, ignore_missing_simple=True)
+        nhdu = len(head)
+        print("@split_wcs_head_: {} ({} HDUs) to ccd_id_img.whead.fits".format(wcshead, nhdu))
+
+        # for i, filename in enumerate(im_index):
+        #     pathsplit = os.path.split(filename)
+        #     if workdir == '':
+        #         workdir = pathsplit[0]
+        #     headname = os.path.join(workdir, pathsplit[1] + '.whead.fits')
+        #     wheader = head[i].header
+        #     prihdu = fits.PrimaryHDU(header=wheader)
+        #     prihdu.writeto(headname, overwrite=True)
+        for i, ccd_id in enumerate(self.dm.target_ccd_ids):
+            prihdu = fits.PrimaryHDU(header=head[i].header)
+            prihdu.writeto(self.dm.l1_sci(ccd_id, suffix="img", ext="whead.fits"), overwrite=True)
+        return
 
     def run_sextractor(self, image, cat):
         image0 = image
@@ -269,22 +320,34 @@ class CsstProcFluxCalibration(CsstProcessor):
 
         return cat
 
-    def prepare(self, image, wcsdir, workdir, usewcsresult=False, newcat=False):
+    def prepare(self, this_ccd_id, wcsdir, workdir, usewcsresult=False, newcat=False):
         # make calibration files: Obs. cat (SExtractor), PSF model (PSFex)
         # sex_zp=str(25.5+2.5*np.log10(exptime))
-        if not os.path.exists(workdir):
-            os.mkdir(workdir)
-        imag_file_ename = os.path.split(image)[-1]
-        imname = imag_file_ename[0:imag_file_ename.find('.fits')]
-        imname0 = imag_file_ename[0:imag_file_ename.find('_img') - 3]
-        wcscat0 = os.path.join(wcsdir, imname0 + '.acat.fits')
-        wcscat1 = os.path.join(wcsdir, imname + '.acat')
-        wcshead0 = os.path.join(wcsdir, imname0 + '.acat.head.fits')
-        wcshead0txt = wcshead0[:wcshead0.rfind('.fits')]
-        wcshead1 = os.path.join(wcsdir, imname + '.acat.head.fits')
-        cat = os.path.join(workdir, imname + '.acat')
-        ref = os.path.join(workdir, imname + '.rcat')
-        wcshead2 = os.path.join(workdir, imname + '.whead.fits')
+        # if not os.path.exists(workdir):
+        #     os.mkdir(workdir)
+        image = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
+
+        # imag_file_ename = os.path.split(image)[-1]
+        imag_file_ename = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
+        # imname = imag_file_ename[0:imag_file_ename.find('.fits')]
+        # imname0 = imag_file_ename[0:imag_file_ename.find('_img') - 3]
+        # wcscat0 = os.path.join(wcsdir, imname0 + '.acat.fits')
+        wcscat0 = self.dm.l1_hardcode(hdcd="combined_acat.fits", comment="prepare")
+        # wcscat1 = os.path.join(wcsdir, imname + '.acat')
+        wcscat1 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat")
+        # wcshead0 = os.path.join(wcsdir, imname0 + '.acat.head.fits')
+        wcshead0 = self.dm.l1_hardcode(hdcd="combined_acat.head.fits") # scamp output head, converted to fits
+        # wcshead0txt = wcshead0[:wcshead0.rfind('.fits')]
+        wcshead0txt = self.dm.l1_hardcode(hdcd="combined_acat.head") # scamp output head, txt format
+        # wcshead1 = os.path.join(wcsdir, imname + '.acat.head.fits')
+        wcshead1 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat.head.fits")
+
+        # cat = os.path.join(workdir, imname + '.acat')
+        cat = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat") # sex output catalog
+        # ref = os.path.join(workdir, imname + '.rcat')
+        ref = self.dm.l1_sci(this_ccd_id, suffix="img", ext="rcat") # reference catalog (to be generated)
+        # wcshead2 = os.path.join(workdir, imname + '.whead.fits')
+        wcshead2 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="whead.fits") # wcs head (to be generated)
 
         # cali_ref='GAIA' #calibration reference data
 
@@ -292,19 +355,37 @@ class CsstProcFluxCalibration(CsstProcessor):
         im_index = []
         if (os.path.isfile(cat)) & (newcat):
             os.remove(cat)
-        if (not os.path.isfile(wcscat1)) or ((os.path.isfile(wcscat0)) & (usewcsresult)):
-            im_index = self.rewrite_sex_cat(wcscat0, workdir)
-            if os.path.isfile(wcshead0):
-                self.split_wcs_head(wcshead0, im_index, workdir)
-            elif os.path.isfile(wcshead0txt):
-                wcshead0 = self.rewrite_wcs_head(wcshead0txt)
-                self.split_wcs_head(wcshead0, im_index, workdir)
-        if (not os.path.isfile(wcscat1)):
-            self.run_sextractor(image, wcscat1)
 
-        header = self.combine_head(image, wcshead1, wcshead2, prime=False)
+        # if splitted sex cat does not exist or combined, no matter splitted or combined,
+        # if (not os.path.isfile(wcscat1)) or (os.path.isfile(wcscat0) & usewcsresult):
+        #     im_index = self.rewrite_sex_cat(wcscat0, workdir)
+        #     if os.path.isfile(wcshead0):
+        #         self.split_wcs_head(wcshead0, im_index, workdir)
+        #     elif os.path.isfile(wcshead0txt):
+        #         wcshead0 = self.rewrite_wcs_head(wcshead0txt)
+        #         self.split_wcs_head(wcshead0, im_index, workdir)
 
-        return wcscat1, cat, ref, header
+        # wcscat1: {ccd_id}_img.acat
+        # wcscat0: combined_acat.fits
+        # usewcsresult = True --> for test
+        # if (not os.path.isfile(wcscat1)) or (os.path.isfile(wcscat0) & usewcsresult):
+        #     im_index = self.rewrite_sex_cat_(wcscat0)
+        #     if os.path.isfile(wcshead0):
+        #         self.split_wcs_head(wcshead0, im_index, workdir)
+        #     elif os.path.isfile(wcshead0txt):
+        #         wcshead0 = self.rewrite_wcs_head(wcshead0txt)
+        #         self.split_wcs_head(wcshead0, im_index, workdir)
+
+        # if sex cat for this image does not exist, run sex (deprecated)
+        # if (not os.path.isfile(wcscat1)):
+        #     self.run_sextractor(image, wcscat1)
+
+        # image: {ccd_id}_img.fits
+        # wcshead1: img.acat.head.fits, scamp wcs head for each image
+        # wcshead2: img.whead.fits
+        header = self.combine_head_(this_ccd_id, prime=False)
+
+        return header
 
     # def getebv(image):
     #    ebv=0.0
@@ -424,12 +505,48 @@ class CsstProcFluxCalibration(CsstProcessor):
 
         return h0
 
+    def combine_head_(self, ccd_id, prime=False):
+        """ combine image head and wcs head keywords """
+        # inst_head_file = image[0:image.find('.fits')] + '.head'
+        inst_head_file = self.dm.l1_sci(ccd_id, suffix="img", ext="head")
+        # if os.path.isfile(inst_head_file):
+        h0 = fits.getheader(inst_head_file, ignore_missing_simple=True)
+        # else:
+        #     h0 = fits.getheader(image, 1, ignore_missing_simple=True)
+
+        # if os.path.isfile(wcshead1):
+        #     hw = fits.getheader(wcshead1, ignore_missing_simple=True)
+        # elif os.path.isfile(wcshead2):
+        wcshead2 = self.dm.l1_sci(ccd_id, suffix="img", ext="whead.fits")
+        hw = fits.getheader(wcshead2, ignore_missing_simple=True)
+
+        # if prime:
+        #     # if True, include primary header
+        #     hprime = fits.getheader(image, 0, ignore_missing_simple=True)
+        #     h0.extend(hprime, unique=True, update=True)
+
+        # try:
+        h0.extend(hw, unique=True, update=True)
+        # except:
+        #     print(image, ': no wcs header file')
+
+        # update the keywords CTYPE1 & CTYPE2 in header
+        if ('CTYPE1' in list(h0.keys())) & ('PV1_0' in list(h0.keys())):
+            h0['CTYPE1'] = 'RA---TPV'
+            h0['CTYPE2'] = 'DEC--TPV'
+            success_scamp = True
+        else:
+            success_scamp = False
+
+        h0["PCSCAMP"] = success_scamp
+        return h0
+
     def match_calib(self, obsc, refc, obsm, refm, obsme, refme, obsflags, fwhmsex=np.array([])):
         # matching obs and ref catalogs
         '''
         coeff0=self.match_calib(obsc,refc,obsm,refm)
         obsc,refc: obs and ref coordinates
-        obsm,refm: obs and ref magnitudes 
+        obsm,refm: obs and ref magnitudes
         '''
         coeff0 = cstd = cobsm = crefm = -1
         ccdraoff = ccddecoff = -1
@@ -489,36 +606,42 @@ class CsstProcFluxCalibration(CsstProcessor):
         # print('crefm.min,max=',refm.min(),refm.max())
         return coeff0, cstd, csize, cobsm, crefm, ccdraoff, ccddecoff, fwhm
 
-    def calib(self, image, imgdata, whtdata, flgdata, wcsdir='./', L1dir='./', workdir='./', refdir='', addhead=False,
-              morehead=True, plot=False, nodel=True, update=False, upcat=True):
+    def calib(self, this_ccd_id, addhead=False, morehead=True, plot=False, nodel=True, update=False, upcat=True):
 
-        print('calibration for:', image)
-        if not os.path.exists(L1dir):
-            os.mkdir(L1dir)
-        if not os.path.exists(workdir):
-            os.mkdir(workdir)
+        # set directories in case of necessary
+        refdir = self.dm.dir_l0
+        wcsdir = L1dir = workdir = self.dm.dir_l1
 
-        imag_file_ename = os.path.split(image)[-1]
+        # read image data
+        fp_img = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
+        fp_wht = self.dm.l1_sci(this_ccd_id, suffix="wht", ext="fits")
+        fp_flg = self.dm.l1_sci(this_ccd_id, suffix="flg", ext="fits")
+        imgdata = fits.open(fp_img)
+        whtdata = fits.open(fp_wht)
+        flgdata = fits.open(fp_flg)
+
+        # imag_file_ename = os.path.split(image)[-1]
+        imag_file_ename = os.path.split(self.dm.l1_sci(this_ccd_id, "img", "fits"))[-1]
         imname = imag_file_ename[0:imag_file_ename.rfind('.')]
-        image_head_file = os.path.join(workdir, imname + '.head')
-        # if os.path.exists(image_head_file) and (not update):
-        #    print((image+' has been calibrated.'))
-        #    return
+        # image_head_file = os.path.join(workdir, imname + '.head')
+        image_head_file = self.dm.l1_sci(this_ccd_id, suffix="img", ext="head")
 
-        psname = os.path.join(workdir, imname + '_calib.png')
-        if plot and os.path.isfile(psname) and (not update):
-            print((psname, ' is existed, pass'))
-            return
-
-        ckf = os.path.join(workdir, 'checkwcs.ls')
-        ckim = os.path.join(workdir, 'checkim.ls')
+        # psname = os.path.join(workdir, imname + '_calib.png')
+        psname = self.dm.l1_hardcode(hdcd='flux_calib.png', comment="calib")
+        # if plot and os.path.isfile(psname) and (not update):
+        #     print((psname, ' is existed, pass'))
+        #     return
+        ckf = self.dm.l1_hardcode(hdcd='checkwcs.ls', comment="calib")
+        ckim = self.dm.l1_hardcode(hdcd='checkim.ls', comment="calib")
 
         # get astrometry head
         # header=self.combine_head(image)
 
         cali_ref = 'GAIA'  # calibration reference data
         # Get the photometric catalog,  astrometry head
-        cat, newcat, ref, header = self.prepare(image, wcsdir, workdir, newcat=False)
+        cat = newcat = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat")
+        ref = self.dm.l1_sci(this_ccd_id, suffix="img", ext="rcat")
+        header = self.prepare(this_ccd_id, wcsdir, workdir, newcat=False)
 
         # get obs. Information from header
         # k=list(header.keys())
@@ -559,11 +682,12 @@ class CsstProcFluxCalibration(CsstProcessor):
         obsm = sexcat['MAG_APER']  # aperture radii=13pix
         obsme = sexcat['MAGERR_APER']
         ccdnstar = obsm.size  # ccdnstar; total number of stars detected on a CCD
-        if cstar.size <= 0:
+        if len(sexcat) <= 0:
             # ckim=image[image.rfind('/')+1:image.rfind('.')][0:5]+'checkim.ls'
             imcheck = open(ckim, "a")
-            print('line501: image needs update. Pass.')
-            print(image, file=imcheck)
+            # print('line501: image needs update. Pass.')
+            # print(image, file=imcheck)
+            print("CCD_ID={}: sex catalog length = {}, needs check".format(this_ccd_id, len(sexcat)))
             imcheck.close()
             return
 
@@ -582,12 +706,16 @@ class CsstProcFluxCalibration(CsstProcessor):
 
         # get reference catalog
         # ps=self.read_gaiacat(r,d,outcat=ref,silent=True)
-        ps = self.read_inputcat(image, outcat=ref, refdir=refdir)
+
+        # read input catalog, write to img.rcat
+        ps = self.read_inputcat_(this_ccd_id)
+        ps.write(ref, format='fits', overwrite=True)
         # remove tmp file: cat & ref
 
         if np.size(ps) < 1:
             wcscheck = open(ckf, "a")
-            print(image, file=wcscheck)
+            # print(image, file=wcscheck)
+            print("CCD_ID={}: ref catalog length = 0, needs check".format(this_ccd_id, len(ps)))
             wcscheck.close()
             return
         else:
@@ -607,10 +735,13 @@ class CsstProcFluxCalibration(CsstProcessor):
         coeff0 = self.match_calib(obsc, refc, obsm, refm, obsme, refme, obsflags, fwhmsex)
         if coeff0[2] <= 0:
             imcheck = open(ckim, "a")
-            print('line560: image needs update. Pass.')
-            print(image, file=imcheck)
+            # print('line560: image needs update. Pass.')
+            print("CCD_ID={}: coeff0[2] = {} <=0: ".format(this_ccd_id, coeff0[2]))
+            print("this is coeff0:", coeff0)
             imcheck.close()
             # return
+            # coeff0, cstd, csize, cobsm, crefm, ccdraoff, ccddecoff, fwhm
+            header[""]
 
         coeff1 = self.match_calib(obsc[im1], refc[ref1], obsm[im1], refm[ref1], obsme[im1], refme[ref1], obsflags[im1])
         coeff2 = self.match_calib(obsc[im2], refc[ref2], obsm[im2], refm[ref2], obsme[im2], refme[ref2], obsflags[im2])
@@ -695,6 +826,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         if not ('SKYRMS' in list(header.keys())):
             # imdata=fits.getdata(image, 0)
             imdata = imgdata[1].data
+            # TODO: this is not the center of CSST CCDs
             skystat = sigma_clipped_stats(imdata[500:1500, 500:1500], sigma=3.)
             ccdskyrms = skystat[2]  # rms/pixel of the sky in CCD
             ccdsky_com = '(e-/s per pixel)'
@@ -716,6 +848,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         header.set('FLUX_V', '1.3', vernum_com)
         header.set('FLUX_TOL', opetime, 'flux calibration operation time')
 
+        # if True, write to _img.head
         if morehead:
             # catroot=cat[:cat.rfind('phot.fits')]
             prihdu = fits.PrimaryHDU(header=header)
@@ -730,16 +863,18 @@ class CsstProcFluxCalibration(CsstProcessor):
         qc1list = os.path.join(workdir, 'file_list.tmp')  # the name of QC1 list
         qc1 = open(qc1list, "a")  # open the file
 
+        # if True, add head to L1 image
         if addhead:
             # print(('add head for ',image))
-            imwht = image.replace('_img', '_wht')
-            imflg = image.replace('_img', '_flg')
-            for img, im in zip([image, imwht, imflg], [imgdata, whtdata, flgdata]):
-                newimage = os.path.join(L1dir, os.path.split(img)[-1])
-                newimage = newimage.replace('.fits', '_L1.fits')
+            # imwht = image.replace('_img', '_wht')
+            # imflg = image.replace('_img', '_flg')
+            for suffix, im in zip(["img", "wht", "flg"], [imgdata, whtdata, flgdata]):
+                # newimage = os.path.join(L1dir, os.path.split(img)[-1])
+                # newimage = newimage.replace('.fits', '_L1.fits')
+                newimage = self.dm.l1_sci(this_ccd_id, suffix=suffix+"_L1")
                 # im = fits.open(img,mode='readonly')
                 h0 = fits.PrimaryHDU(data=im[0].data, header=im[0].header)
-                h1 = fits.ImageHDU(data=im[1].data, header=header)
+                h1 = fits.ImageHDU(data=im[1].data, header=header) # updates are here!
                 hdulist = fits.HDUList([h0, h1])
                 hdulist.writeto(newimage, overwrite=True)
                 # im.writeto(newimage, overwrite=True)
@@ -781,32 +916,30 @@ class CsstProcFluxCalibration(CsstProcessor):
 
         return coeff, std, match
 
-    def run(self, fn_list, img_list=[], wht_list=[], flg_list=[], wcsdir='./', L1dir='./', workdir='./', refdir='',
-            addhead=True, morehead=False, plot=False, nodel=True, update=False, upcat=True):
+    def run(self, addhead=True, morehead=False, plot=False, nodel=True, update=False, upcat=True):
 
-        if len(fn_list) == 0:
-            print('Flux calibration: No input images in img_list!')
-            return
+        # if len(fn_list) == 0:
+        #     print('Flux calibration: No input images in img_list!')
+        #     return
         # time1=time.time()
-        print('\n\n############### run flux calibration ###############')
-        for i in range(len(fn_list)):
-            image = workdir + fn_list[i]
-            if len(img_list) == len(fn_list):
-                imgdata = img_list[i]
-                whtdata = wht_list[i]
-                flgdata = flg_list[i]
-            else:
-                print("Image data is not defined, will be read from files")
-                imgdata = fits.open(image, mode='readonly')
-                whtdata = fits.open(image.replace('_img', '_wht'), mode='readonly')
-                flgdata = fits.open(image.replace('_img', '_flg'), mode='readonly')
+        print('############### run flux calibration ###############')
+        # split combined_acat.head.fits
+        wcshead0 = self.dm.l1_hardcode(hdcd="combined_acat.head.fits", comment="run")
+        self.split_wcs_head_(wcshead0)
 
+        # for i in range(len(fn_list)):
+        for i, this_ccd_id in enumerate(self.dm.target_ccd_ids):
+            # image = workdir + fn_list[i]
+            # if len(img_list) == len(fn_list):
+            #     imgdata = img_list[i]
+            #     whtdata = wht_list[i]
+            #     flgdata = flg_list[i]
+            # else:
             # print(('flux calibration: '+image))
-            if not os.path.isfile(image):
-                print(('cannot find the file:' + image))
-            else:
-                self.calib(image, imgdata, whtdata, flgdata, wcsdir=wcsdir, L1dir=L1dir, workdir=workdir, refdir=refdir,
-                           addhead=addhead, morehead=morehead, plot=plot, nodel=nodel, update=update)
+            # if not os.path.isfile(image):
+            #     print(('cannot find the file:' + image))
+            # else:
+            self.calib(this_ccd_id, addhead=addhead, morehead=morehead, plot=plot, nodel=nodel, update=update)
         # time2=time.time()
         print('\n############### flux calibration done #############\n')
 
