@@ -21,6 +21,12 @@ class CsstMscDataManager:
         MSC_10000100_chip_06_filt_y.cat
         MSC_10000100_chip_06_filt_y.log
 
+    C5.2
+        CSST_MSC_MS_SCI_20270810081950_20270810082220_100000100_06_L0_1.fits
+        CSST_MSC_MS_CRS_20270810081950_20270810082220_100000100_06_L0_1.fits
+        MSC_100000100_chip_06_filt_y.cat
+        MSC_100000100_chip_06_filt_y.log
+
     """
 
     def __init__(self, ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux="", force_all_ccds=False):
@@ -110,6 +116,9 @@ class CsstMscDataManager:
         elif self.ver_sim == "C5.1":
             fn = "{}_{}_chip_{:02d}_filt_{}.cat".format(
                 self._instrument, self._exp_id - 90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
+        elif self.ver_sim == "C5.2":
+            fn = "{}_{}_chip_{:02d}_filt_{}.cat".format(
+                self._instrument, self._exp_id, ccd_id, CCD_FILTER_MAPPING[ccd_id])
         return os.path.join(self.dir_l0, fn)
 
     def l0_log(self, ccd_id=6):
@@ -117,7 +126,10 @@ class CsstMscDataManager:
         if self.ver_sim == "C5.1":
             fn = "{}_{}_chip_{:02d}_filt_{}.log".format(
                 self._instrument, self._exp_id - 90000000, ccd_id, CCD_FILTER_MAPPING[ccd_id])
-            return os.path.join(self.dir_l0, fn)
+        elif self.ver_sim == "C5.2":
+            fn = "{}_{}_chip_{:02d}_filt_{}.log".format(
+                self._instrument, self._exp_id, ccd_id, CCD_FILTER_MAPPING[ccd_id])
+        return os.path.join(self.dir_l0, fn)
 
     def l0_sci(self, ccd_id=6):
         """ L0 image file path """

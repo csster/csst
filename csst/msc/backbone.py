@@ -26,4 +26,4 @@ CCD_FILTER_MAPPING = {
 }
 
 # define versions of simulation
-VER_SIMS = ["C5.1", "C3"]
+VER_SIMS = ["C5.1", "C5.2", "C3"]
