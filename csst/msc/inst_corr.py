@@ -31,7 +31,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         """ as suggested by Z.Xie """
         torch.set_num_threads(n_threads)
 
-    def _do_fix(self, raw, bias, dark, flat):
+    def _do_fix(self, raw, bias, dark, flat, exptime):
         '''仪器效应改正
 
         将raw扣除本底, 暗场, 平场. 并且避免了除0
@@ -40,10 +40,10 @@ class CsstMscInstrumentProc(CsstProcessor):
             bias: 本底
             dark: 暗场
             flat: 平场
-            exptime: 曝光时长
+            exptime: 曝光时间
         '''
         self.__img = np.divide(
-            raw.data - bias - dark * raw.exptime, flat,
+            raw.data - bias - dark * exptime, flat,
             out=np.zeros_like(raw.data, float),
             where=(flat != 0),
         )
@@ -165,12 +165,12 @@ class CsstMscInstrumentProc(CsstProcessor):
         self.__wht = np.zeros_like(raw.data, dtype=np.float32)
         self.__flg = np.zeros_like(raw.data, dtype=np.uint16)
 
-        exptime = raw.get_keyword('EXPTIME', hdu=0)
+        exptime = raw[1].header["exptime"]
         gain = raw.get_keyword('GAIN1', hdu=1)
         rdnoise = raw.get_keyword('RDNOISE1', hdu=1)
 
         # Flat and bias correction
-        self._do_fix(raw, bias, dark, flat)
+        self._do_fix(raw, bias, dark, flat, exptime)
         self._do_badpix(flat)
         self._do_hot_and_warm_pix(dark, exptime, rdnoise)
         self._do_over_saturation(raw)
@@ -180,7 +180,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         print('finish the run and save the results back to CsstData')
 
         # make a deep copy explicitly specify dtype
-        img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32))
+        img = raw.deepcopy(name="SCI", data=self.__img.astype(np.float32)/exptime)
         wht = raw.deepcopy(name="WHT", data=self.__wht.astype(np.float32))
         flg = raw.deepcopy(name="FLG", data=self.__flg.astype(np.uint16))
 
