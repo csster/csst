@@ -7,6 +7,7 @@ from deepCR import deepCR
 from ..core.processor import CsstProcessor, CsstProcStatus
 from ._photometry.csst_photometry import do_phot
 from ..msc import CsstMscImgData
+from .data_manager import CsstMscDataManager
 from .. import PACKAGE_PATH
 
 
@@ -15,8 +16,9 @@ from .. import PACKAGE_PATH
 
 class CsstMscPhotometryProc(CsstProcessor):
 
-    def __init__(self):
+    def __init__(self, dm: CsstMscDataManager):
         super(CsstProcessor, self).__init__()
+        self.dm = dm
 
     def prepare(self, **kwargs):
         # check whether SExtractor and PSFEx exists
@@ -25,8 +27,12 @@ class CsstMscPhotometryProc(CsstProcessor):
     def cleanup(self):
         pass
 
-    def run(self, fl_in, out_dir, n_jobs=1, verbose=5):
-        # assert len(fl_in) == len(fl_out)
+    def run(self, n_jobs=1, verbose=5):
         joblib.Parallel(n_jobs=n_jobs, verbose=verbose)(
-            joblib.delayed(do_phot)(fl_in[i], outdir=out_dir) for i in range(len(fl_in)))
+            joblib.delayed(do_phot)(
+                fitsfile=self.dm.l1_sci(ccd_id=ccd_id, suffix="img_L1", ext="fits"),
+                outdir=self.dm.dir_l1,
+                psffile=self.dm.l1_sci(ccd_id=ccd_id, suffix="psf", ext="fits"),
+                catfile=self.dm.l1_sci(ccd_id=ccd_id, suffix="cat", ext="fits"),
+            ) for ccd_id in self.dm.target_ccd_ids)
         return

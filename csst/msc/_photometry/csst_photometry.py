@@ -821,7 +821,7 @@ def match_ps1(sexcat, ps1cat, outcat=None):
 
 
 #
-def do_phot(fitsfile, outdir=None, stage=None, ):
+def do_phot(fitsfile, outdir=None, psffile=None, catfile=None, stage=None, ):
     """
     get PSF and do photometry
     ifits: fits image
@@ -839,8 +839,9 @@ def do_phot(fitsfile, outdir=None, stage=None, ):
 
     # get psfex
     time0 = time.time()
-    psffile = fitsname + '_psf.fits'
-    catfile = fitsname + '_cat.fits'
+    psffile = fitsname + '_psf.fits' if psffile is None else psffile
+    catfile = fitsname + '_cat.fits' if catfile is None else catfile
+
     time1 = time0
     if (stage is None or stage == 'psf') and (not os.path.isfile(psffile)):
         # get_psf(fitsfile,outdir=outdir,psf_size=71,degree=3,variability=0.3,fwhm_range=[1.5,20.0],max_elp=0.3,sampling=0,min_sn=10.0,detect_thresh=5.0,detect_minarea=5,back_size='400,400',check_plots=False,nthread=0,remove_polution=True,min_nstar=15,max_nstar=1500,class_star=0.7,match_dist=3.0,min_separation=20)
