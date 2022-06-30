@@ -26,6 +26,24 @@ CONFIG_DANDELION = dict(
     backend_multithreading=False
 )
 
+
+CONFIG_150s = dict(
+    # test and working directory
+    dir_l0="/home/csstpipeline/L1Pipeline/msc/150s",
+    dir_l1="/home/csstpipeline/L1Pipeline/msc/150work/",
+    # on Dandelion
+    path_aux="/home/csstpipeline/L1Pipeline/msc/ref/MSC_{}_*_{:02d}_combine.fits",
+    # gaia catalog directory (for position calibration)
+    dir_pcref="/home/csstpipeline/L1Pipeline/msc/gaia_dr3/",
+    # version of simulation data
+    ver_sim="C3",
+    # only 18 cores available in cloud machine from PMO
+    n_jobs=18,
+    # shut down backend multithreading
+    backend_multithreading=False
+)
+
+
 CONFIG_CHAM = dict(
     # test and working directory
     dir_l0="/data/L1Pipeline/msc/MSC_0000020",
@@ -82,6 +100,8 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
     dm.set_ccd_ids(ccd_ids)
 
     # Step 1. Correct instrumental effect
+    if not os.path.exists(dir_l1):
+        os.mkdir(dir_l1)
     os.chdir(dir_l1)
 
     if runproc[0]:
