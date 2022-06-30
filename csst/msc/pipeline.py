@@ -40,7 +40,8 @@ CONFIG_150s = dict(
     # only 18 cores available in cloud machine from PMO
     n_jobs=18,
     # shut down backend multithreading
-    backend_multithreading=False
+    backend_multithreading=False,
+    ccd_ids=CCD_ID_LIST,
 )
 
 

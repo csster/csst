@@ -235,7 +235,7 @@ class CsstMscDataManager:
             except AssertionError as ae:
                 print("@DM: available CCD IDs are ", self.available_ccd_ids)
                 print("@DM: target CCD IDs are ", ccd_ids)
-                raise ae
+                # raise ae
             self.target_ccd_ids = ccd_ids
         print("final target CCD IDs are ", self.target_ccd_ids)
         return
