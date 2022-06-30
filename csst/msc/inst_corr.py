@@ -43,8 +43,8 @@ class CsstMscInstrumentProc(CsstProcessor):
             exptime: 曝光时间
         '''
         self.__img = np.divide(
-            raw.data - bias - dark * exptime, flat,
-            out=np.zeros_like(raw.data, float),
+            raw[1].data - bias - dark * exptime, flat,
+            out=np.zeros_like(raw[1].data, float),
             where=(flat != 0),
         )
 
@@ -56,7 +56,6 @@ class CsstMscInstrumentProc(CsstProcessor):
         Args:
             flat: 平场
         '''
-        # TODO: flat-bias?
         med = np.median(flat)
         flg = (flat < 0.5 * med) | (1.5 * med < flat)
         self.__flg = self.__flg | (flg * 1)
@@ -88,7 +87,7 @@ class CsstMscInstrumentProc(CsstProcessor):
         Args:
             raw: 科学图生图
         '''
-        flg = raw.data == 65535
+        flg = raw[1].data == 65535
         self.__flg = self.__flg | (flg * 8)
 
     def _do_cray(self, gain, rdnoise):
@@ -161,13 +160,13 @@ class CsstMscInstrumentProc(CsstProcessor):
     def run(self, raw: CsstMscImgData, bias: np.ndarray, dark: np.ndarray, flat: np.ndarray, ver_sim="C3"):
 
         assert isinstance(raw, CsstMscImgData)
-        self.__img = np.copy(raw.data)
-        self.__wht = np.zeros_like(raw.data, dtype=np.float32)
-        self.__flg = np.zeros_like(raw.data, dtype=np.uint16)
+        self.__img = np.copy(raw[1].data)
+        self.__wht = np.zeros_like(raw[1].data, dtype=np.float32)
+        self.__flg = np.zeros_like(raw[1].data, dtype=np.uint16)
 
         exptime = raw[1].header["exptime"]
-        gain = raw.get_keyword('GAIN1', hdu=1)
-        rdnoise = raw.get_keyword('RDNOISE1', hdu=1)
+        gain = raw[1].header["GAIN1"]
+        rdnoise = raw[1].header["RDNOISE1"]
 
         # Flat and bias correction
         self._do_fix(raw, bias, dark, flat, exptime)
