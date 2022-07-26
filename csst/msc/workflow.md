@@ -15,7 +15,7 @@
       - `csst_realtime.param` PARAMETERS
       - `csst_realtime.conv` FILTER
       - `csst_realtime.nnw` STARNNW
-      - `{ccd_id}_img.fits`-->`{ccd_id}_img.acat`
+      - `{ccd_id}_img.fits`-->`{ccd_id}_img.acat`for 18 images respectively
    3. *combine_catalog*: combine sex catalogs into one
       - `{ccd_id}_img.acat` --> `combined_acat.fits`
       - 18*3 HDUs ("", "LDAC_IMHEAD", "LDAC_OBJECTS")
@@ -33,10 +33,10 @@
    7. *check_astrometry*: collect sex & scamp results
       - *rewrite_wcs_head*
         - `combined_acat.head` -> `combined_acat.head.fits`
-      - merge `{ccd_id}_img.acat` into `combined_acat.change.fits` with WCS header `combined_acat.head.fits`
+      - merge {ccd_id}_img.acat` into `combined_acat.change.fits` with WCS header `combined_acat.head.fits`
       - `combined_acat.change.fits` has 18*3 HDUs but with updated RA&Dec relative to `combined_acat.fits`
    8. `write_headers` : write (WCS) history to headers
-      - merge scamp WCS `combined_acat.head.fits` into `{ccd_id}_img.head`
+      - split scamp WCS `combined_acat.head.fits` into `{ccd_id}_img.head`
       - mode=update / overwrite???
       - actually it has no effect...
 
