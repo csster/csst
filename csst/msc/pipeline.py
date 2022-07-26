@@ -10,6 +10,7 @@ from csst.msc.inst_corr import CsstMscInstrumentProc
 from csst.msc.phot import CsstMscPhotometryProc
 from csst.msc.data_manager import CsstMscDataManager
 
+# dandelion, csstpipeline, C3
 CONFIG_DANDELION = dict(
     # test and working directory
     dir_l0="/home/csstpipeline/L1Pipeline/msc/MSC_0000020",
@@ -26,7 +27,7 @@ CONFIG_DANDELION = dict(
     backend_multithreading=False
 )
 
-
+# pmo, user, C3
 CONFIG_150s = dict(
     # test and working directory
     dir_l0="/data/L1Pipeline/msc/150s",
@@ -44,7 +45,7 @@ CONFIG_150s = dict(
     ccd_ids=CCD_ID_LIST,
 )
 
-
+# dandelion, cham, C3
 CONFIG_CHAM = dict(
     # test and working directory
     dir_l0="/data/L1Pipeline/msc/MSC_0000020",
@@ -61,6 +62,24 @@ CONFIG_CHAM = dict(
     backend_multithreading=False
 )
 
+# dandelion, anyuser, C5.2
+CONFIG_ANYUSER_DDL_C52 = dict(
+    # test and working directory
+    dir_l0="/nfsdata/share/csst_simulation_data/Cycle-5-SimuData/multipleBandsImaging/NGP_AstrometryON_shearOFF/MSC_0000100",
+    dir_l1="{}/L1Pipeline/msc/work/".format(os.getenv("HOME")),
+    # on Dandelion
+    path_aux="/nfsdata/users/cham/L1Test/ref_C5.2/MSC_{}_*_{:02d}_combine.fits",
+    # gaia catalog directory (for position calibration)
+    dir_pcref="/data/L1Pipeline/msc/gaia_dr3/",
+    # version of simulation data
+    ver_sim="C5.2",
+    # only 18 cores available in cloud machine from PMO
+    n_jobs=18,
+    # shut down backend multithreading
+    backend_multithreading=False
+)
+
+# pmo, user, C5.2
 CONFIG_PMO = dict(
     # test and working directory
     # dir_l0="/share/simudata/CSSOSDataProductsSims/data/CSSTSimImage_C5/NGP_AstrometryON_shearOFF/MSC_0000100",
@@ -79,7 +98,7 @@ CONFIG_PMO = dict(
 )
 
 
-def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux="", ccd_ids=None,
+def do_one_exposure(ver_sim="C5.2", dir_l0="", dir_l1="", dir_pcref="", path_aux="", ccd_ids=None,
                     n_jobs=18, backend_multithreading=False, runproc=(1, 0, 0, 0), dumpfile="test.dump"):
     # currently C3 and C5.1 are tested
     try:
@@ -116,7 +135,7 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
         fn_list = []
         for this_ccd_id in dm.target_ccd_ids:
             print("processing CCD {}".format(this_ccd_id))
-            fp_raw = dm.l0_sci(ccd_id=this_ccd_id)
+            fp_raw = dm.l0_ccd(ccd_id=this_ccd_id)
 
             # read data with CsstMscImgData.read
             raw = CsstMscImgData.read(fp_raw)
@@ -134,11 +153,11 @@ def do_one_exposure(ver_sim="C5.1", dir_l0="", dir_l1="", dir_pcref="", path_aux
             # fp_img = img[0].header["FILENAME"] + '.fits'
 
             # save img, wht, flg to somewhere
-            img.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="fits"), overwrite=True)
-            wht.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="wht", ext="fits"), overwrite=True)
-            flg.writeto(dm.l1_sci(ccd_id=this_ccd_id, suffix="flg", ext="fits"), overwrite=True)
+            img.writeto(dm.l1_ccd(ccd_id=this_ccd_id, post="img.fits"), overwrite=True)
+            wht.writeto(dm.l1_ccd(ccd_id=this_ccd_id, post="wht.fits"), overwrite=True)
+            flg.writeto(dm.l1_ccd(ccd_id=this_ccd_id, post="flg.fits"), overwrite=True)
             # save header
-            img[1].header.tofile(dm.l1_sci(ccd_id=this_ccd_id, suffix="img", ext="head"), overwrite=True)
+            img[1].header.tofile(dm.l1_ccd(ccd_id=this_ccd_id, post="img.head"), overwrite=True)
 
             # append img, wht, flg list
             img_list.append(img)
@@ -208,15 +227,18 @@ if __name__ == "__main__":
     # do_one_exposure(runproc=(1, 1, 0, 0), **CONFIG_CHAM)
     # do_one_exposure(runproc=(0, 0, 1, 0), **CONFIG_CHAM)
 
-    # on Dandelion, test another C3 data
-    from csst.msc.pipeline import do_one_exposure, CONFIG_150s
-    print(CONFIG_150s)
-    do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_150s)
+    # # on Dandelion, test another C3 data
+    # from csst.msc.pipeline import do_one_exposure, CONFIG_150s
+    # print(CONFIG_150s)
+    # do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_150s)
+    #
+    # # on PMO, test C5.2 data
+    # from csst.msc.pipeline import do_one_exposure, CONFIG_PMO
+    # print(CONFIG_PMO)
+    # do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_PMO)
 
-    # on PMO, test new C5.2 data
-    from csst.msc.pipeline import do_one_exposure, CONFIG_PMO
-    print(CONFIG_PMO)
-    do_one_exposure(runproc=(1, 1, 1, 1), **CONFIG_PMO)
-
-
+    # on DDL, test C5.2 data
+    from csst.msc.pipeline import do_one_exposure, CONFIG_ANYUSER_DDL_C52
+    print(CONFIG_ANYUSER_DDL_C52)
+    do_one_exposure(runproc=(1, 1, 0, 0), **CONFIG_ANYUSER_DDL_C52)
 
