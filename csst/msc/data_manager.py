@@ -85,7 +85,8 @@ class CsstMscDataManager:
         """ glob files in L0 data directory """
         if ver_sim == "C3":
             pattern = os.path.join(dir_l0, "MSC_MS_*_raw.fits")
-        elif ver_sim in ["C5.1", "C5.2"]:
+        else:
+            assert ver_sim in ["C5.1", "C5.2"]
             pattern = os.path.join(dir_l0, "CSST_MSC_MS_SCI_*.fits")
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
@@ -99,7 +100,8 @@ class CsstMscDataManager:
         """ glob input catalogs in L0 data directory """
         if ver_sim == "C3":
             pattern = os.path.join(dir_l0, "MSC_*.cat")
-        elif ver_sim in ["C5.1", "C5.2"]:
+        else:
+            assert ver_sim in ["C5.1", "C5.2"]
             pattern = os.path.join(dir_l0, "MSC_*.cat")
         fps = glob.glob(pattern)
         fps = [os.path.basename(fp) for fp in fps]
@@ -131,12 +133,13 @@ class CsstMscDataManager:
                 self._instrument, self._exp_id, ccd_id, CCD_FILTER_MAPPING[ccd_id])
         return os.path.join(self.dir_l0, fn)
 
-    def l0_sci(self, ccd_id=6):
-        """ L0 image file path """
+    def l0_ccd(self, ccd_id=6):
+        """ L0 CCD-specific image file path """
         if self.ver_sim == "C3":
             fn = "{}_{}_{}_{}_{:02d}_raw.fits".format(
                 self._instrument, self._survey, self._exp_start, self._exp_id, ccd_id)
-        elif self.ver_sim in ["C5.1", "C5.2"]:
+        else:
+            assert self.ver_sim in ["C5.1", "C5.2"]
             fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_L0_1.fits".format(
                 self._telescope, self._instrument, self._survey,
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id)
@@ -147,23 +150,23 @@ class CsstMscDataManager:
         if self.ver_sim == "C3":
             fn = "{}_CRS_{}_{}_{:02d}_raw.fits".format(
                 self._instrument, self._exp_start, self._exp_id, ccd_id)
-        elif self.ver_sim in ["C5.1", "C5.2"]:
+        else:
+            assert self.ver_sim in ["C5.1", "C5.2"]
             fn = "{}_{}_{}_CRS_{}_{}_{}_{:02d}_L0_1.fits".format(
                 self._telescope, self._instrument, self._survey,
                 self._exp_start, self._exp_stop, self._exp_id, ccd_id)
         return os.path.join(self.dir_l0, fn)
 
-    def l1_sci(self, ccd_id=6, suffix="img_whead", ext="fits"):
+    def l1_ccd(self, ccd_id=6, post="img.fits"):
         """ generate L1 file path
 
         Parameters
         ----------
         ccd_id:
             CCD ID
-        suffix:
-            {"img", "wht", "flg", "img_L1", "wht_L1", "flg_L1", "whead"}
-        ext:
-            {"fits", "cat", "rcat"}
+        post:
+            postfix
+            {"img.fits", "wht.fits", "flg.fits", "img_L1.fits", "wht_L1.fits", "flg_L1.fits"}
 
         Returns
         -------
@@ -171,57 +174,58 @@ class CsstMscDataManager:
 
         """
         if self.ver_sim == "C3":
-            fn = "{}_{}_{}_{}_{:02d}_{}.{}".format(
+            fn = "{}_{}_{}_{}_{:02d}_{}".format(
                 self._instrument, self._survey,
-                self._exp_start, self._exp_id, ccd_id, suffix, ext)
-        elif self.ver_sim in ["C5.1", "C5.2"]:
-            fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_{}.{}".format(
+                self._exp_start, self._exp_id, ccd_id, post)
+        else:
+            assert self.ver_sim in ["C5.1", "C5.2"]
+            fn = "{}_{}_{}_SCI_{}_{}_{}_{:02d}_{}".format(
                 self._telescope, self._instrument, self._survey,
-                self._exp_start, self._exp_stop, self._exp_id, ccd_id, suffix, ext)
+                self._exp_start, self._exp_stop, self._exp_id, ccd_id, post)
         return os.path.join(self.dir_l1, fn)
 
-    def pc_combined_image(self, suffix="img", ext="fits"):
-        """ combined images
+    # def pc_combined_image(self, suffix="img", ext="fits"):
+    #     """ combined images
+    #
+    #     Parameters
+    #     ----------
+    #     suffix:
+    #         {"img", "wht", "flg", "cat"}
+    #     ext:
+    #         {"fits", }
+    #
+    #     Returns
+    #     -------
+    #     combined image path
+    #
+    #     """
+    #     fn = "combined_" + "{}.{}".format(suffix, ext)
+    #     return os.path.join(self.dir_l1, fn)
 
-        Parameters
-        ----------
-        suffix:
-            {"img", "wht", "flg", "cat"}
-        ext:
-            {"fits", }
+    # @property
+    # def pc_ref_cat(self):
+    #     """ reference catalog """
+    #     return os.path.join(self.dir_l1, "ref.cat")
 
-        Returns
-        -------
-        combined image path
+    # @property
+    # def pc_check_fits(self):
+    #     """ check fits """
+    #     return os.path.join(self.dir_l1, "check.fits")
 
-        """
-        fn = "combined_" + "{}.{}".format(suffix, ext)
-        return os.path.join(self.dir_l1, fn)
+    # @property
+    # def pc_combined_head(self):
+    #     """ combined head """
+    #     return os.path.join(self.dir_l1, "combined_cat.head")
 
-    @property
-    def pc_ref_cat(self):
-        """ reference catalog """
-        return os.path.join(self.dir_l1, "ref.cat")
+    # @property
+    # def pc_combined_head_fits(self):
+    #     """ combined head (converted to) fits """
+    #     return os.path.join(self.dir_l1, "combined_cat.head.fits")
 
-    @property
-    def pc_check_fits(self):
-        """ check fits """
-        return os.path.join(self.dir_l1, "check.fits")
-
-    @property
-    def pc_combined_head(self):
-        """ combined head """
-        return os.path.join(self.dir_l1, "combined_cat.head")
-
-    @property
-    def pc_combined_head_fits(self):
-        """ combined head (converted to) fits """
-        return os.path.join(self.dir_l1, "combined_cat.head.fits")
-
-    @property
-    def pc_scamp_coord(self):
-        """ SCAMP coord """
-        return os.path.join(self.dir_l1, "scamp_coord.txt")
+    # @property
+    # def pc_scamp_coord(self):
+    #     """ SCAMP coord """
+    #     return os.path.join(self.dir_l1, "scamp_coord.txt")
 
     def set_ccd_ids(self, ccd_ids=None):
         """ set target ccd ids """
@@ -252,8 +256,23 @@ class CsstMscDataManager:
         fp = glob.glob(self.path_aux.format("CLF", ccd_id))[0]
         return fits.getdata(fp)
 
-    def l1_hardcode(self, hdcd="", comment=""):
-        fp = os.path.join(self.dir_l1, hdcd)
+    def l1_file(self, name="", comment=""):
+        """
+
+        Parameters
+        ----------
+        name: str
+            file name
+        comment: str
+            use the function name plz
+
+        Returns
+        -------
+        fp: str
+            the synthetic file path
+
+        """
+        fp = os.path.join(self.dir_l1, name)
         # record hardcode history
         self.hardcode_history.append(dict(hdcd=fp, comment=comment))
         return fp
@@ -267,18 +286,18 @@ if __name__ == "__main__":
     dm = CsstMscDataManager(
         ver_sim="C3", dir_l0="/data/L1Pipeline/msc/MSC_0000020", dir_l1="/data/L1Pipeline/msc/work")
     print("----- L0 images -----")
-    print(dm.l0_sci(ccd_id=6))
-    print(os.path.exists(dm.l0_sci(ccd_id=6)))
+    print(dm.l0_ccd(ccd_id=6))
+    print(os.path.exists(dm.l0_ccd(ccd_id=6)))
     print("----- L0 crs -----")
     print(dm.l0_crs(ccd_id=6))
-    print(os.path.exists(dm.l0_sci(ccd_id=8)))
+    print(os.path.exists(dm.l0_ccd(ccd_id=8)))
     print("----- L0 input cat -----")
     print(dm.l0_cat(8))
     print(os.path.exists(dm.l0_cat(ccd_id=8)))
     print("----- available ccd_ids -----")
     print(dm.available_ccd_ids)
     print("----- L1 images -----")
-    print(dm.l1_sci(25, "img", "fits"))
+    print(dm.l1_ccd(25, "img", "fits"))
 
     # test C5.1
     import os
@@ -291,11 +310,11 @@ if __name__ == "__main__":
     print(dm.available_ccd_ids)
     for ccd_id in dm.available_ccd_ids[:2]:
         print("----- L0 images -----")
-        print(dm.l0_sci(ccd_id=ccd_id))
-        print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print(dm.l0_ccd(ccd_id=ccd_id))
+        print(os.path.exists(dm.l0_ccd(ccd_id=ccd_id)))
         print("----- L0 crs -----")
         print(dm.l0_crs(ccd_id=ccd_id))
-        print(os.path.exists(dm.l0_sci(ccd_id=ccd_id)))
+        print(os.path.exists(dm.l0_ccd(ccd_id=ccd_id)))
         print("----- L0 input cat -----")
         print(dm.l0_cat(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_cat(ccd_id=ccd_id)))
@@ -303,4 +322,4 @@ if __name__ == "__main__":
         print(dm.l0_log(ccd_id=ccd_id))
         print(os.path.exists(dm.l0_log(ccd_id=ccd_id)))
         print("----- L1 images -----")
-        print(dm.l1_sci(ccd_id, "img", "fits"))
+        print(dm.l1_ccd(ccd_id, "img", "fits"))
