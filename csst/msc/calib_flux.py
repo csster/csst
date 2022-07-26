@@ -23,7 +23,7 @@ __author__ = 'ZZM'
 
 class CsstProcFluxCalibration(CsstProcessor):
 
-    def __init__(self, dm : CsstMscDataManager, **kwargs):
+    def __init__(self, dm: CsstMscDataManager, **kwargs):
         super().__init__(**kwargs)
         self.dm = dm
 
@@ -254,7 +254,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         # return index
         for i, ccd_id in enumerate(self.dm.target_ccd_ids):
             hdu = fits.HDUList([data[0], data[3 * i + 1], data[3 * i + 2]])
-            hdu.writeto(self.dm.l1_sci(ccd_id, suffix="img", ext="acat"), overwrite=False)
+            hdu.writeto(self.dm.l1_ccd(ccd_id, post="img.acat"), overwrite=False)
         return
 
     def split_wcs_head(self, wcshead, im_index=[], workdir=''):
@@ -290,7 +290,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         #     prihdu.writeto(headname, overwrite=True)
         for i, ccd_id in enumerate(self.dm.target_ccd_ids):
             prihdu = fits.PrimaryHDU(header=head[i].header)
-            prihdu.writeto(self.dm.l1_sci(ccd_id, suffix="img", ext="whead.fits"), overwrite=True)
+            prihdu.writeto(self.dm.l1_ccd(ccd_id, post="img.whead.fits"), overwrite=True)
         return
 
     def run_sextractor(self, image, cat):
@@ -325,29 +325,29 @@ class CsstProcFluxCalibration(CsstProcessor):
         # sex_zp=str(25.5+2.5*np.log10(exptime))
         # if not os.path.exists(workdir):
         #     os.mkdir(workdir)
-        image = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
+        image = self.dm.l1_ccd(this_ccd_id, post="img.fits")
 
         # imag_file_ename = os.path.split(image)[-1]
-        imag_file_ename = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
+        # imag_file_ename = self.dm.l1_ccd(this_ccd_id, post="img.fits")
         # imname = imag_file_ename[0:imag_file_ename.find('.fits')]
         # imname0 = imag_file_ename[0:imag_file_ename.find('_img') - 3]
         # wcscat0 = os.path.join(wcsdir, imname0 + '.acat.fits')
-        wcscat0 = self.dm.l1_hardcode(hdcd="combined_acat.fits", comment="prepare")
+        # wcscat0 = self.dm.l1_file(name="combined_acat.fits", comment="prepare")
         # wcscat1 = os.path.join(wcsdir, imname + '.acat')
-        wcscat1 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat")
+        # wcscat1 = self.dm.l1_ccd(this_ccd_id, suffix="img", ext="acat")
         # wcshead0 = os.path.join(wcsdir, imname0 + '.acat.head.fits')
-        wcshead0 = self.dm.l1_hardcode(hdcd="combined_acat.head.fits") # scamp output head, converted to fits
+        # wcshead0 = self.dm.l1_file(name="combined_acat.head.fits")  # scamp output head, converted to fits
         # wcshead0txt = wcshead0[:wcshead0.rfind('.fits')]
-        wcshead0txt = self.dm.l1_hardcode(hdcd="combined_acat.head") # scamp output head, txt format
+        # wcshead0txt = self.dm.l1_file(name="combined_acat.head")  # scamp output head, txt format
         # wcshead1 = os.path.join(wcsdir, imname + '.acat.head.fits')
-        wcshead1 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat.head.fits")
+        # wcshead1 = self.dm.l1_ccd(this_ccd_id, post="img.acat.head.fits")
 
         # cat = os.path.join(workdir, imname + '.acat')
-        cat = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat") # sex output catalog
+        cat = self.dm.l1_ccd(this_ccd_id, post="img.acat")  # sex output catalog
         # ref = os.path.join(workdir, imname + '.rcat')
-        ref = self.dm.l1_sci(this_ccd_id, suffix="img", ext="rcat") # reference catalog (to be generated)
+        # ref = self.dm.l1_ccd(this_ccd_id, post="img.rcat")  # reference catalog (to be generated)
         # wcshead2 = os.path.join(workdir, imname + '.whead.fits')
-        wcshead2 = self.dm.l1_sci(this_ccd_id, suffix="img", ext="whead.fits") # wcs head (to be generated)
+        # wcshead2 = self.dm.l1_ccd(this_ccd_id, post="img.whead.fits")  # wcs head (to be generated)
 
         # cali_ref='GAIA' #calibration reference data
 
@@ -508,7 +508,7 @@ class CsstProcFluxCalibration(CsstProcessor):
     def combine_head_(self, ccd_id, prime=False):
         """ combine image head and wcs head keywords """
         # inst_head_file = image[0:image.find('.fits')] + '.head'
-        inst_head_file = self.dm.l1_sci(ccd_id, suffix="img", ext="head")
+        inst_head_file = self.dm.l1_ccd(ccd_id, post="img.head")
         # if os.path.isfile(inst_head_file):
         h0 = fits.getheader(inst_head_file, ignore_missing_simple=True)
         # else:
@@ -517,7 +517,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         # if os.path.isfile(wcshead1):
         #     hw = fits.getheader(wcshead1, ignore_missing_simple=True)
         # elif os.path.isfile(wcshead2):
-        wcshead2 = self.dm.l1_sci(ccd_id, suffix="img", ext="whead.fits")
+        wcshead2 = self.dm.l1_ccd(ccd_id, post="img.whead.fits")
         hw = fits.getheader(wcshead2, ignore_missing_simple=True)
 
         # if prime:
@@ -615,34 +615,34 @@ class CsstProcFluxCalibration(CsstProcessor):
         wcsdir = L1dir = workdir = self.dm.dir_l1
 
         # read image data
-        fp_img = self.dm.l1_sci(this_ccd_id, suffix="img", ext="fits")
-        fp_wht = self.dm.l1_sci(this_ccd_id, suffix="wht", ext="fits")
-        fp_flg = self.dm.l1_sci(this_ccd_id, suffix="flg", ext="fits")
+        fp_img = self.dm.l1_ccd(this_ccd_id, post="img.fits")
+        fp_wht = self.dm.l1_ccd(this_ccd_id, post="wht.fits")
+        fp_flg = self.dm.l1_ccd(this_ccd_id, post="flg.fits")
         imgdata = fits.open(fp_img)
         whtdata = fits.open(fp_wht)
         flgdata = fits.open(fp_flg)
 
         # imag_file_ename = os.path.split(image)[-1]
-        imag_file_ename = os.path.split(self.dm.l1_sci(this_ccd_id, "img", "fits"))[-1]
-        imname = imag_file_ename[0:imag_file_ename.rfind('.')]
+        # imag_file_ename = os.path.split(self.dm.l1_ccd(this_ccd_id, post="img.fits"))[-1]
+        # imname = imag_file_ename[0:imag_file_ename.rfind('.')]
         # image_head_file = os.path.join(workdir, imname + '.head')
-        image_head_file = self.dm.l1_sci(this_ccd_id, suffix="img", ext="head")
+        image_head_file = self.dm.l1_ccd(this_ccd_id, post="img.head")
 
         # psname = os.path.join(workdir, imname + '_calib.png')
-        psname = self.dm.l1_hardcode(hdcd='flux_calib.png', comment="calib")
+        psname = self.dm.l1_file(name='flux_calib.png', comment="calib")
         # if plot and os.path.isfile(psname) and (not update):
         #     print((psname, ' is existed, pass'))
         #     return
-        ckf = self.dm.l1_hardcode(hdcd='checkwcs.ls', comment="calib")
-        ckim = self.dm.l1_hardcode(hdcd='checkim.ls', comment="calib")
+        ckf = self.dm.l1_file(name='checkwcs.ls', comment="calib")
+        ckim = self.dm.l1_file(name='checkim.ls', comment="calib")
 
         # get astrometry head
         # header=self.combine_head(image)
 
         cali_ref = 'GAIA'  # calibration reference data
         # Get the photometric catalog,  astrometry head
-        cat = newcat = self.dm.l1_sci(this_ccd_id, suffix="img", ext="acat")
-        ref = self.dm.l1_sci(this_ccd_id, suffix="img", ext="rcat")
+        cat = newcat = self.dm.l1_ccd(this_ccd_id, post="img.acat")
+        ref = self.dm.l1_ccd(this_ccd_id, post="img.rcat")
         header = self.prepare(this_ccd_id, wcsdir, workdir, newcat=False)
 
         # get obs. Information from header
@@ -873,10 +873,10 @@ class CsstProcFluxCalibration(CsstProcessor):
             for suffix, im in zip(["img", "wht", "flg"], [imgdata, whtdata, flgdata]):
                 # newimage = os.path.join(L1dir, os.path.split(img)[-1])
                 # newimage = newimage.replace('.fits', '_L1.fits')
-                newimage = self.dm.l1_sci(this_ccd_id, suffix=suffix+"_L1")
+                newimage = self.dm.l1_ccd(this_ccd_id, post=suffix + "_L1.fits")
                 # im = fits.open(img,mode='readonly')
                 h0 = fits.PrimaryHDU(data=im[0].data, header=im[0].header)
-                h1 = fits.ImageHDU(data=im[1].data, header=header) # updates are here!
+                h1 = fits.ImageHDU(data=im[1].data, header=header)  # updates are here!
                 hdulist = fits.HDUList([h0, h1])
                 hdulist.writeto(newimage, overwrite=True)
                 # im.writeto(newimage, overwrite=True)
@@ -926,7 +926,7 @@ class CsstProcFluxCalibration(CsstProcessor):
         # time1=time.time()
         print('############### run flux calibration ###############')
         # split combined_acat.head.fits
-        wcshead0 = self.dm.l1_hardcode(hdcd="combined_acat.head.fits", comment="run")
+        wcshead0 = self.dm.l1_file(name="combined_acat.head.fits", comment="run")
         self.split_wcs_head_(wcshead0)
 
         # for i in range(len(fn_list)):
@@ -945,23 +945,25 @@ class CsstProcFluxCalibration(CsstProcessor):
         # time2=time.time()
         print('\n############### flux calibration done #############\n')
 
-    def cleanup(self, fn_list, workdir, nodel=False):
-        # clean up environment
-        for image in fn_list:
-            cat = os.path.join(workdir, image[:-5] + '.acat')
-            ref = os.path.join(workdir, image[:-5] + '.rcat')
-            whead = os.path.join(workdir, image[:-5] + '.whead.fits')
-            # psname =os.path.join(workdir,image+'_calib.png')
-            if not nodel:
-                try:
-                    os.remove(cat)
-                except FileNotFoundError:
-                    print()
-                try:
-                    os.remove(ref)
-                except FileNotFoundError:
-                    print()
-                try:
-                    os.remove(whead)
-                except FileNotFoundError:
-                    print()
+    def cleanup(self):
+        pass
+    # def cleanup(self, fn_list, workdir, nodel=False):
+    #     # clean up environment
+    #     for image in fn_list:
+    #         cat = os.path.join(workdir, image[:-5] + '.acat')
+    #         ref = os.path.join(workdir, image[:-5] + '.rcat')
+    #         whead = os.path.join(workdir, image[:-5] + '.whead.fits')
+    #         # psname =os.path.join(workdir,image+'_calib.png')
+    #         if not nodel:
+    #             try:
+    #                 os.remove(cat)
+    #             except FileNotFoundError:
+    #                 print()
+    #             try:
+    #                 os.remove(ref)
+    #             except FileNotFoundError:
+    #                 print()
+    #             try:
+    #                 os.remove(whead)
+    #             except FileNotFoundError:
+    #                 print()
