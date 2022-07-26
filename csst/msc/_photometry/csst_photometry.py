@@ -39,6 +39,8 @@ from shutil import which
 # CONFIG_PATH = os.path.join(prog_dir, 'config/')
 
 from csst import PACKAGE_PATH
+from ..data_manager import CsstMscDataManager
+
 CONFIG_PATH = PACKAGE_PATH + "/msc/phot_config/"
 
 __version__ = "1.2.3"
@@ -284,11 +286,11 @@ def get_psf(ccd_id, dm, psf_size=101, degree=2, variability=0.3, fwhm_range=[2.0
     # flagfile = fp_img.replace("_img", "_flg")
     # weightfile = fp_img.replace("_img", "_wht")
 
-    fp_img = dm.l1_sci(ccd_id=ccd_id, suffix="img_L1", ext="fits")
-    fp_wht = dm.l1_sci(ccd_id=ccd_id, suffix="wht_L1", ext="fits")
-    fp_flg = dm.l1_sci(ccd_id=ccd_id, suffix="flg_L1", ext="fits")
-    fp_psf = dm.l1_sci(ccd_id=ccd_id, suffix="psf", ext="fits")
-    fp_cat = dm.l1_sci(ccd_id=ccd_id, suffix="cat", ext="fits")
+    fp_img = dm.l1_ccd(ccd_id=ccd_id, post="img_L1.fits")
+    fp_wht = dm.l1_ccd(ccd_id=ccd_id, post="wht_L1.fits")
+    fp_flg = dm.l1_ccd(ccd_id=ccd_id, post="flg_L1.fits")
+    fp_psf = dm.l1_ccd(ccd_id=ccd_id, post="psf.fits")
+    fp_cat = dm.l1_ccd(ccd_id=ccd_id, post="cat.fits")
 
     head = fits.getheader(fp_img, 0)
     gain = head['exptime']
@@ -374,11 +376,11 @@ def photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nt
     #         os.mkdir(outdir)
     #     _, rootname = os.path.split(fitsname)
     #     fitsname = os.path.join(outdir, rootname)
-    fp_img = dm.l1_sci(ccd_id=ccd_id, suffix="img_L1", ext="fits")
-    fp_wht = dm.l1_sci(ccd_id=ccd_id, suffix="wht_L1", ext="fits")
-    fp_flg = dm.l1_sci(ccd_id=ccd_id, suffix="flg_L1", ext="fits")
-    fp_psf = dm.l1_sci(ccd_id=ccd_id, suffix="psf", ext="fits")
-    fp_cat = dm.l1_sci(ccd_id=ccd_id, suffix="cat", ext="fits")
+    fp_img = dm.l1_ccd(ccd_id=ccd_id, post="img_L1.fits")
+    fp_wht = dm.l1_ccd(ccd_id=ccd_id, post="wht_L1.fits")
+    fp_flg = dm.l1_ccd(ccd_id=ccd_id, post="flg_L1.fits")
+    fp_psf = dm.l1_ccd(ccd_id=ccd_id, post="psf.fits")
+    fp_cat = dm.l1_ccd(ccd_id=ccd_id, post="cat.fits")
 
     sexfile = os.path.join(CONFIG_PATH, 'csst_phot.sex')
     covfile = os.path.join(CONFIG_PATH, 'default.conv')
@@ -409,7 +411,7 @@ def photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nt
     gain = head['exptime']
 
     types = {'sky': 'BACKGROUND', 'seg': 'SEGMENTATION', 'mod': 'MODELS', 'res': '-MODELS'}
-    fp_cat = dm.l1_sci(ccd_id, suffix="fluxadu", ext="fits")
+    fp_cat = dm.l1_ccd(ccd_id, post="fluxadu.fits")
     if checkfiles is None:
         checktype = "NONE"
         checknames = "check.fits"
@@ -421,7 +423,7 @@ def photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nt
         for i in range(ntypes):
             ikey = checkfiles[i]
             checktype += types[ikey] + " "
-            checknames += dm.l1_sci(ccd_id, suffix=ikey, ext="fits") + " "# fp_img + "_" + ikey + ".fits "
+            checknames += dm.l1_ccd(ccd_id, post=ikey + ".fits") + " "# fp_img + "_" + ikey + ".fits "
         checktype += "'"
         checknames += "'"
 
@@ -447,7 +449,7 @@ def photometry(ccd_id, dm, detect_thresh=1.0, analysis_thresh=1.0, clean='Y', nt
                                        sig_limit=0.08, aper_size=[3, 4, 5, 6, 8, 10, 13, 16, 20, 25, 30, 40],
                                        aper_ref=5, class_lim=0.5)
         # corfile = fp_img + '_cat.fits'
-        corfile = dm.l1_sci(ccd_id, suffix="cat", ext="fits")
+        corfile = dm.l1_ccd(ccd_id, post="cat.fits")
         fluxcor.write(corfile, format='fits', overwrite=True)
         ind_head1 = head1.index('NAXIS2') + 1
         ind_head = head.index('NEXTEND') + 1
@@ -832,8 +834,7 @@ def match_ps1(sexcat, ps1cat, outcat=None):
     return sexps1
 
 
-#
-def do_phot(ccd_id, dm, stage=None, ):
+def do_phot(ccd_id, dm: CsstMscDataManager, stage=None, ):
     """
     get PSF and do photometry
     ifits: fits image
@@ -841,8 +842,8 @@ def do_phot(ccd_id, dm, stage=None, ):
     stage: psf or phot to run only get_psf or photometry
     """
 
-    fp_psf = dm.l1_sci(ccd_id, suffix="psf", ext="fits")
-    fp_cat = dm.l1_sci(ccd_id, suffix="cat", ext="fits")
+    fp_psf = dm.l1_ccd(ccd_id, post="psf.fits")
+    fp_cat = dm.l1_ccd(ccd_id, post="cat.fits")
 
     # get psfex
     time0 = time.time()
